@@ -1,0 +1,8 @@
+{% extends "layouts/form_page.html" %}
+{% block title %}Report · Program Course Finder{% endblock %}
+{% block heading %}Report a problem{% endblock %}
+{% block subheading %}About: <strong class="text-ink">{{ target }}</strong>. Reports are checked by the Program Course Finder team.{% endblock %}
+{% block actions %}
+  {% include "components/button.html" with url=target.get_absolute_url label="Cancel" variant="quiet" %}
+  {% include "components/button.html" with label="Send report" %}
+{% endblock %}

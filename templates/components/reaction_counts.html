@@ -1,0 +1,3 @@
+{# Like and dislike totals for a course (from reviews.utils.add_reaction_counts). Usage: include "components/reaction_counts.html" with course=course #}
+<span class="inline-flex items-center gap-1 text-sm text-muted" aria-label="{{ course.likes }} likes">{% include "components/icon.html" with name="like" size="h-4 w-4" %}{{ course.likes }}</span>
+<span class="inline-flex items-center gap-1 text-sm text-muted" aria-label="{{ course.dislikes }} dislikes">{% include "components/icon.html" with name="dislike" size="h-4 w-4" %}{{ course.dislikes }}</span>

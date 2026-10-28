@@ -1,0 +1,15 @@
+{% extends "layouts/form_page.html" %}
+{% block title %}Upload document · Program Course Finder{% endblock %}
+{% block heading %}Upload a <span class="text-primary">document</span>{% endblock %}
+{% block subheading %}Uploading the same type again replaces the old file.{% endblock %}
+{% block notes %}
+  <p class="mt-6 flex gap-3 text-sm leading-relaxed text-muted">
+    <span class="text-primary">{% include "components/icon.html" with name="lock" %}</span>
+    Documents are private. Only the Program Course Finder team sees them while checking your college.
+  </p>
+{% endblock %}
+{% block actions %}
+  {% url 'organizations:dashboard' as dashboard_url %}
+  {% include "components/button.html" with url=dashboard_url label="Cancel" variant="quiet" %}
+  {% include "components/button.html" with label="Upload" %}
+{% endblock %}

@@ -1,0 +1,10 @@
+{% extends "layouts/auth_page.html" %}
+{% block title %}Log in · Program Course Finder{% endblock %}
+{% block heading %}Welcome <span class="text-primary">back</span>{% endblock %}
+{% block subheading %}Log in to pick up where you left off.{% endblock %}
+{% block actions %}{% include "components/button.html" with label="Log in" full=True %}{% endblock %}
+{% block below_form %}
+  <p class="mt-8 border-t border-line pt-6 text-center text-sm text-muted">
+    No account yet? <a href="{% url 'accounts:register' %}" class="font-semibold text-primary hover:text-primary-dark">Create one for free</a>
+  </p>
+{% endblock %}

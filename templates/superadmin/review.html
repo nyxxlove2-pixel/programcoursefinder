@@ -1,0 +1,116 @@
+{% extends "layouts/superadmin.html" %}
+{% load formatting %}
+{% block title %}Review {{ organization.name }} · Super admin{% endblock %}
+
+{% block content %}
+<nav class="flex items-center gap-2 pt-8 text-sm text-muted" aria-label="Breadcrumb">
+  <a href="{% url 'superadmin:dashboard' %}?status={{ organization.status }}" class="font-semibold hover:text-primary">Colleges</a>
+  <span aria-hidden="true">/</span>
+  <span class="truncate">{{ organization.name }}</span>
+</nav>
+
+<div class="mt-6 grid gap-6 lg:grid-cols-[1fr_22rem] lg:gap-8">
+  <div class="min-w-0 space-y-6">
+    {# ---------- College header ---------- #}
+    <section>
+      <div class="flex items-center gap-4">
+        {% include "components/monogram.html" with name=organization.name size="h-14 w-14 text-xl" %}
+        <div class="min-w-0">
+          <h1 class="text-2xl font-extrabold tracking-tight sm:text-3xl">{{ organization.name }}</h1>
+          <div class="mt-1.5 flex flex-wrap items-center gap-3 text-sm text-muted">
+            {% include "components/status_badge.html" with item=organization %}
+            <span>Registered {{ organization.created_at|date:"M j, Y" }}</span>
+            {% if organization.verified_at %}<span>· Verified {{ organization.verified_at|date:"M j, Y" }}</span>{% endif %}
+          </div>
+        </div>
+      </div>
+      {% if organization.status_reason %}
+        <div class="mt-4">{% include "components/alert.html" with tone="warning" title="Last message sent:" text=organization.status_reason %}</div>
+      {% endif %}
+      {% if organization.description %}<p class="mt-4 max-w-2xl leading-relaxed text-muted">{{ organization.description }}</p>{% endif %}
+    </section>
+
+    {# ---------- Contact details (hairline grid) ---------- #}
+    <section class="overflow-hidden rounded-2xl border border-line bg-white shadow-panel">
+      <h2 class="border-b border-line px-5 py-3 font-bold sm:px-6">Details</h2>
+      <dl class="grid gap-px bg-line sm:grid-cols-2">
+        {% include "components/fact.html" with icon="user" label="Account owner" value=organization.owner.full_name %}
+        {% include "components/fact.html" with icon="mail" label="Account email" value=organization.owner.email %}
+        {% include "components/fact.html" with icon="mail" label="Official email" value=organization.email %}
+        {% include "components/fact.html" with icon="phone" label="Phone" value=organization.phone %}
+        <div class="sm:col-span-2">{% include "components/fact.html" with icon="pin" label="Address" value=organization.address %}</div>
+      </dl>
+      <div class="flex flex-wrap gap-2 border-t border-line px-5 py-4 sm:px-6">
+        {% if organization.map_url %}{% include "components/button.html" with url=organization.map_url label="Map pin" variant="ghost" icon="pin" %}{% endif %}
+        {% if organization.website %}{% include "components/button.html" with url=organization.website label="Website" variant="ghost" icon="globe" %}{% endif %}
+        {% if organization.facebook_url %}{% include "components/button.html" with url=organization.facebook_url label="Facebook" variant="ghost" %}{% endif %}
+        {% if organization.instagram_url %}{% include "components/button.html" with url=organization.instagram_url label="Instagram" variant="ghost" %}{% endif %}
+        {% if organization.tiktok_url %}{% include "components/button.html" with url=organization.tiktok_url label="TikTok" variant="ghost" %}{% endif %}
+        {% if organization.youtube_url %}{% include "components/button.html" with url=organization.youtube_url label="YouTube" variant="ghost" %}{% endif %}
+      </div>
+    </section>
+
+    {# ---------- Verification documents ---------- #}
+    <section class="overflow-hidden rounded-2xl border border-line bg-white shadow-panel">
+      <div class="flex items-center justify-between gap-4 border-b border-line px-5 py-3 sm:px-6">
+        <h2 class="font-bold">Documents</h2>
+        <span class="text-sm font-semibold {% if documents_uploaded < document_rows|length %}text-accent{% else %}text-green-700{% endif %}">{{ documents_uploaded }} of {{ document_rows|length }} uploaded</span>
+      </div>
+      <ul class="divide-y divide-line">
+        {% for row in document_rows %}
+          <li class="flex items-center justify-between gap-4 px-5 py-3 sm:px-6">
+            <span class="flex min-w-0 items-center gap-2.5 text-sm">
+              <span class="{% if row.document %}text-green-600{% else %}text-line{% endif %}">{% include "components/icon.html" with name="verified" %}</span>
+              <span class="min-w-0">
+                {{ row.label }}
+                {% if row.document %}<span class="block text-xs text-muted">Uploaded {{ row.document.uploaded_at|date:"M j, Y" }}</span>{% endif %}
+              </span>
+            </span>
+            {% if row.document %}
+              <a href="{% url 'organizations:view_document' row.document.pk %}" target="_blank" rel="noopener"
+                 class="inline-flex min-h-[44px] shrink-0 items-center gap-1.5 text-sm font-semibold text-primary hover:text-primary-dark">
+                Open {% include "components/icon.html" with name="external" size="h-4 w-4" %}
+              </a>
+            {% else %}
+              <span class="shrink-0 rounded-full bg-orange-50 px-2.5 py-0.5 text-xs font-bold text-accent">Missing</span>
+            {% endif %}
+          </li>
+        {% endfor %}
+      </ul>
+    </section>
+
+    {# ---------- Courses they will publish ---------- #}
+    <section class="overflow-hidden rounded-2xl border border-line bg-white shadow-panel">
+      <h2 class="border-b border-line px-5 py-3 font-bold sm:px-6">Courses <span class="ml-1 font-semibold text-muted">{{ courses|length }}</span></h2>
+      <ul class="divide-y divide-line">
+        {% for course in courses %}
+          <li class="flex items-center justify-between gap-4 px-5 py-3 text-sm sm:px-6">
+            <span class="min-w-0 truncate font-semibold">{{ course.name }}</span>
+            <span class="shrink-0 text-muted">{{ course.yearly_tuition|peso }} / year</span>
+          </li>
+        {% empty %}
+          <li class="px-6 py-8 text-center text-sm text-muted">No courses added yet.</li>
+        {% endfor %}
+      </ul>
+    </section>
+  </div>
+
+  {# ---------- Decision ---------- #}
+  <aside class="lg:sticky lg:top-24 lg:self-start">
+    <form method="post" class="overflow-hidden rounded-2xl border border-line bg-white shadow-soft">
+      {% csrf_token %}
+      <h2 class="border-b border-line px-5 py-4 font-bold">Your decision</h2>
+      <div class="space-y-5 p-5">
+        {% if documents_uploaded < document_rows|length %}
+          {% include "components/alert.html" with tone="warning" text="Some documents are missing. You can still decide, but usually ask for changes." %}
+        {% endif %}
+        {% include "components/form_fields.html" with form=form %}
+      </div>
+      <div class="flex justify-end border-t border-line bg-lavender/40 px-5 py-4">
+        {% include "components/button.html" with label="Save decision" icon="check" full=True %}
+      </div>
+    </form>
+    <p class="mt-3 px-1 text-xs leading-relaxed text-muted">The college gets a notification with your decision and message. Approving makes its profile and courses public.</p>
+  </aside>
+</div>
+{% endblock %}

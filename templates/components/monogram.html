@@ -1,0 +1,2 @@
+{# Rounded square with a college's first letter, used where a logo would go. Usage: include "components/monogram.html" with name=organization.name size="h-11 w-11 text-lg" #}
+<span class="grid {{ size|default:'h-11 w-11 text-lg' }} shrink-0 place-items-center rounded-xl bg-gradient-to-br from-lavender to-line font-extrabold text-primary" aria-hidden="true">{{ name|first|upper }}</span>

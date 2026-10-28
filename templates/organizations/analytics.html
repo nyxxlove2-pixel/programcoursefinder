@@ -1,0 +1,100 @@
+{% extends "layouts/organization.html" %}
+{% block title %}Analytics · Program Course Finder{% endblock %}
+
+{% block content %}
+<section class="pt-8 lg:pt-10">
+  <p class="text-sm font-semibold text-muted">Analytics</p>
+  <h1 class="mt-1 text-2xl font-extrabold tracking-tight sm:text-3xl">How students see your courses</h1>
+  <p class="mt-2 max-w-2xl text-muted">Every number here comes from your students' reviews and reactions.</p>
+</section>
+
+{# ---------- Headline numbers (the 1px gap draws the lines between cells) ---------- #}
+<section class="mt-6 grid grid-cols-2 gap-px overflow-hidden rounded-2xl border border-line bg-line shadow-panel lg:grid-cols-4">
+  {% include "components/stat_card.html" with label="Reviews, last 12 months" value=reviews_last_year icon="chat" note="New reviews in the past year" %}
+  {% include "components/stat_card.html" with label="Overall rating" value=stats.average_rating|floatformat:1|default:"—" icon="check" note="Average over all reviews" %}
+  {% if reply_rate is None %}
+    {% include "components/stat_card.html" with label="Reply rate" value="—" icon="send" note="Reviews you answered" %}
+  {% else %}
+    {% include "components/stat_card.html" with label="Reply rate" value=reply_rate|stringformat:"d%%" icon="send" note="Reviews you answered" %}
+  {% endif %}
+  {% include "components/stat_card.html" with label="Likes / dislikes" value=stats.likes total=stats.dislikes icon="like" note="Reactions on your reviews" %}
+</section>
+
+<div class="mt-6 grid gap-6 xl:grid-cols-3">
+  {# ---------- Reviews per month (bar chart; hover a bar for its numbers) ---------- #}
+  <section class="rounded-2xl border border-line bg-white p-5 shadow-panel sm:p-6 xl:col-span-2">
+    <h2 class="font-bold">Reviews per month</h2>
+    <p class="text-sm text-muted">Last 12 months. Hover or tap a bar for details.</p>
+
+    <div class="mt-6 flex h-48 items-end gap-1 border-b border-line sm:gap-2" role="img"
+         aria-label="Bar chart of reviews per month. The same numbers are in the table below.">
+      {% for month in trend %}
+        <div class="group flex h-full flex-1 cursor-default items-end justify-center"
+             title="{{ month.month|date:'M Y' }}: {{ month.count }} review{{ month.count|pluralize }}{% if month.average %}, average {{ month.average|floatformat:1 }} stars{% endif %}">
+          <div class="w-full max-w-[2rem] rounded-t bg-primary transition group-hover:bg-primary-dark" style="height: {{ month.percent }}%"></div>
+        </div>
+      {% endfor %}
+    </div>
+    <div class="mt-2 flex gap-1 text-[11px] font-semibold text-muted sm:gap-2" aria-hidden="true">
+      {% for month in trend %}
+        {# On phones only every other month is labeled so the labels fit #}
+        <span class="flex-1 text-center {% if forloop.counter|divisibleby:2 %}invisible sm:visible{% endif %}">{{ month.month|date:"M" }}</span>
+      {% endfor %}
+    </div>
+
+    <details class="mt-5 text-sm">
+      <summary class="inline-flex min-h-[44px] cursor-pointer items-center font-semibold text-primary">Show as table</summary>
+      <table class="mt-2 w-full text-left">
+        <thead class="text-xs uppercase tracking-wider text-muted">
+          <tr><th class="py-2 font-semibold">Month</th><th class="py-2 text-right font-semibold">Reviews</th><th class="py-2 text-right font-semibold">Average</th></tr>
+        </thead>
+        <tbody class="divide-y divide-line">
+          {% for month in trend %}
+            <tr><td class="py-2">{{ month.month|date:"F Y" }}</td><td class="py-2 text-right font-semibold">{{ month.count }}</td><td class="py-2 text-right">{{ month.average|floatformat:1|default:"—" }}</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </details>
+  </section>
+
+  {# ---------- Rating breakdown ---------- #}
+  <section class="self-start rounded-2xl border border-line bg-white p-5 shadow-panel sm:p-6">
+    <h2 class="font-bold">Rating breakdown</h2>
+    <p class="text-sm text-muted">All reviews, by stars given.</p>
+    <ul class="mt-5 space-y-3">
+      {% for row in distribution %}
+        <li class="flex items-center gap-3 text-sm">
+          <span class="w-12 shrink-0 font-semibold">{{ row.stars }} star{{ row.stars|pluralize }}</span>
+          <span class="h-2.5 flex-1 overflow-hidden rounded-full bg-lavender">
+            <span class="block h-full rounded-full bg-primary" style="width: {{ row.percent }}%"></span>
+          </span>
+          <span class="w-16 shrink-0 text-right text-muted"><strong class="text-ink">{{ row.count }}</strong> · {{ row.percent }}%</span>
+        </li>
+      {% endfor %}
+    </ul>
+  </section>
+</div>
+
+{# ---------- Course ranking ---------- #}
+<section class="mt-6 overflow-hidden rounded-2xl border border-line bg-white shadow-panel">
+  <div class="border-b border-line px-5 py-3 sm:px-6">
+    <h2 class="font-bold">Courses by rating</h2>
+  </div>
+  <ol class="divide-y divide-line">
+    {% for course in courses %}
+      <li class="flex flex-col gap-2 px-5 py-4 sm:flex-row sm:items-center sm:justify-between sm:px-6">
+        <div class="flex min-w-0 items-center gap-3">
+          <span class="grid h-8 w-8 shrink-0 place-items-center rounded-full bg-lavender text-sm font-bold text-primary">{{ forloop.counter }}</span>
+          <p class="truncate font-semibold">{{ course.name }}</p>
+        </div>
+        <div class="flex flex-wrap items-center gap-x-4 gap-y-1 pl-11 sm:pl-0">
+          {% include "components/stars.html" with rating=course.average_rating count=course.review_count %}
+          {% include "components/reaction_counts.html" %}
+        </div>
+      </li>
+    {% empty %}
+      <li class="px-6 py-10 text-center text-sm text-muted">Add courses to see how each one is doing.</li>
+    {% endfor %}
+  </ol>
+</section>
+{% endblock %}

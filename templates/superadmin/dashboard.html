@@ -1,0 +1,70 @@
+{% extends "layouts/superadmin.html" %}
+{% block title %}Super admin · Program Course Finder{% endblock %}
+
+{% block content %}
+<section class="flex flex-col gap-5 pt-8 sm:flex-row sm:items-end sm:justify-between lg:pt-10">
+  <div>
+    <p class="text-sm font-semibold text-muted">Verification</p>
+    <h1 class="mt-1 text-2xl font-extrabold tracking-tight sm:text-3xl">Colleges to <span class="text-primary">review</span></h1>
+    <p class="mt-2 max-w-xl text-muted">Check each college's documents, then approve it or tell it what to fix. Approved colleges become public.</p>
+  </div>
+
+  <form method="get" class="relative w-full sm:w-72" role="search">
+    <input type="hidden" name="status" value="{{ status }}">
+    <label for="org-search" class="sr-only">Search colleges</label>
+    <span class="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-muted">{% include "components/icon.html" with name="search" size="h-4 w-4" %}</span>
+    <input id="org-search" type="search" name="q" value="{{ query }}" placeholder="Search name or email"
+           class="w-full rounded-full border-line bg-white py-2.5 pl-11 pr-4 text-sm focus:border-primary focus:ring-primary/30">
+  </form>
+</section>
+
+{# ---------- Status cards double as tabs (the 1px gap draws the lines between cells) ---------- #}
+<nav class="mt-6 grid grid-cols-2 gap-px overflow-hidden rounded-2xl border border-line bg-line shadow-panel sm:grid-cols-4" aria-label="Filter by status">
+  {% for card in status_cards %}
+    <a href="?status={{ card.value }}" {% if card.active %}aria-current="page"{% endif %}
+       class="block p-5 transition {% if card.active %}bg-lavender{% else %}bg-white hover:bg-lavender/50{% endif %}">
+      <span class="flex items-center gap-2 text-[13px] font-semibold {% if card.active %}text-primary{% else %}text-muted{% endif %}">
+        <span class="h-2 w-2 rounded-full {% if card.value == 'approved' %}bg-green-600{% elif card.value == 'pending' %}bg-primary{% else %}bg-accent{% endif %}" aria-hidden="true"></span>{{ card.label }}
+      </span>
+      <span class="mt-3 block text-[1.75rem] font-extrabold leading-none tracking-tight sm:text-3xl">{{ card.count }}</span>
+    </a>
+  {% endfor %}
+</nav>
+
+{# ---------- Colleges with this status ---------- #}
+<section class="mt-6 overflow-hidden rounded-2xl border border-line bg-white shadow-panel">
+  <div class="border-b border-line px-5 py-3 sm:px-6">
+    <h2 class="font-bold">{{ status_label }} <span class="ml-1 font-semibold text-muted">{{ organizations|length }}</span></h2>
+  </div>
+  <ul class="divide-y divide-line">
+    {% for organization in organizations %}
+      <li>
+        <a href="{% url 'superadmin:review' organization.pk %}"
+           class="flex flex-col gap-3 px-5 py-4 transition hover:bg-lavender/40 sm:flex-row sm:items-center sm:justify-between sm:px-6">
+          <div class="flex min-w-0 items-center gap-4">
+            {% include "components/monogram.html" with name=organization.name %}
+            <div class="min-w-0">
+              <p class="truncate font-semibold">{{ organization.name }}</p>
+              <p class="truncate text-sm text-muted">{{ organization.owner.full_name }} · {{ organization.owner.email }}</p>
+            </div>
+          </div>
+          <div class="flex flex-wrap items-center gap-x-5 gap-y-1 pl-[3.75rem] text-sm text-muted sm:pl-0">
+            <span class="inline-flex items-center gap-1.5 {% if organization.document_count < documents_needed %}text-accent{% else %}text-green-700{% endif %}">
+              {% include "components/icon.html" with name="document" size="h-4 w-4" %}{{ organization.document_count }} / {{ documents_needed }} docs
+            </span>
+            <span class="inline-flex items-center gap-1.5">{% include "components/icon.html" with name="course" size="h-4 w-4" %}{{ organization.course_count }} course{{ organization.course_count|pluralize }}</span>
+            <span class="inline-flex items-center gap-1.5">{% include "components/icon.html" with name="calendar" size="h-4 w-4" %}{{ organization.created_at|date:"M j, Y" }}</span>
+            <span class="hidden font-semibold text-primary sm:inline-flex sm:items-center sm:gap-1">Review {% include "components/icon.html" with name="arrow" size="h-4 w-4" %}</span>
+          </div>
+        </a>
+      </li>
+    {% empty %}
+      <li class="px-6 py-14 text-center">
+        <span class="mx-auto grid h-12 w-12 place-items-center rounded-2xl bg-lavender text-primary">{% include "components/icon.html" with name="verified" %}</span>
+        <p class="mt-3 font-bold">{% if query %}No colleges match "{{ query }}"{% else %}Nothing here{% endif %}</p>
+        <p class="mt-1 text-sm text-muted">{% if query %}Try another name or email.{% else %}No colleges have this status right now.{% endif %}</p>
+      </li>
+    {% endfor %}
+  </ul>
+</section>
+{% endblock %}

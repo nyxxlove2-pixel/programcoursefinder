@@ -1,0 +1,100 @@
+{% extends "base.html" %}
+{% load formatting %}
+{% block title %}{{ course.name }} · Program Course Finder{% endblock %}
+
+{% block content %}
+<nav class="flex flex-wrap items-center gap-2 pt-8 text-sm text-muted" aria-label="Breadcrumb">
+  <a href="{% url 'courses:search' %}" class="font-semibold hover:text-primary">Courses</a>
+  <span aria-hidden="true">/</span>
+  <a href="{% url 'organizations:detail' course.organization.pk %}" class="font-semibold hover:text-primary">{{ course.organization.name }}</a>
+</nav>
+
+<div class="mt-6 grid gap-8 lg:grid-cols-[1fr_20rem] lg:gap-12">
+  {# ---------- Course info ---------- #}
+  <section class="min-w-0">
+    {% include "components/verified_badge.html" %}
+    <h1 class="mt-4 text-balance text-3xl font-extrabold leading-tight tracking-tight sm:text-[2.75rem]">{{ course.name }}</h1>
+    <a href="{% url 'organizations:detail' course.organization.pk %}" class="mt-4 inline-flex items-center gap-3 font-semibold hover:text-primary">
+      {% include "components/monogram.html" with name=course.organization.name size="h-9 w-9 text-sm" %}
+      {{ course.organization.name }}
+    </a>
+    <div class="mt-4">{% include "components/stars.html" with rating=course.average_rating count=course.review_count %}</div>
+    {% if course.description %}<p class="mt-6 max-w-2xl text-lg leading-relaxed text-muted">{{ course.description }}</p>{% endif %}
+
+    {# Hairline grid: the 1px gap shows the line color between the white cells #}
+    <dl class="mt-8 grid gap-px overflow-hidden rounded-2xl border border-line bg-line sm:grid-cols-2">
+      {% include "components/fact.html" with icon="money" label="Yearly tuition" value=course.yearly_tuition|peso %}
+      {% include "components/fact.html" with icon="money" label="Per-term tuition" value=course.term_tuition|peso %}
+      {% include "components/fact.html" with icon="pin" label="Distance from you" value=course.distance|km %}
+      {% include "components/fact.html" with icon="calendar" label="Last updated" value=course.last_updated|date:"M j, Y" %}
+    </dl>
+  </section>
+
+  {# ---------- Price card ---------- #}
+  <aside class="rounded-2xl border border-line bg-white p-6 shadow-soft lg:sticky lg:top-24 lg:self-start">
+    <p class="text-xs font-bold uppercase tracking-wider text-muted">Yearly tuition</p>
+    <p class="mt-1 text-3xl font-extrabold tracking-tight text-primary">{{ course.yearly_tuition|peso }}</p>
+    {% if course.term_tuition %}<p class="mt-1 text-sm text-muted">{{ course.term_tuition|peso }} per term</p>{% endif %}
+    <div class="mt-6 grid gap-2">
+      {% include "components/compare_button.html" with full=True %}
+      {% url 'organizations:detail' course.organization.pk as college_url %}
+      {% include "components/button.html" with url=college_url label="View college" variant="ghost" full=True %}
+    </div>
+    <div class="mt-4 border-t border-line pt-3 text-center">
+      {% include "components/report_link.html" with target_type="course" target_id=course.pk %}
+    </div>
+  </aside>
+</div>
+
+{# ---------- Reviews ---------- #}
+<section id="reviews" class="mt-20 scroll-mt-24">
+  <h2 class="text-2xl font-extrabold tracking-tight sm:text-3xl">Student <span class="text-primary">reviews</span></h2>
+
+  <div class="mt-6 grid gap-6 lg:grid-cols-[1fr_20rem] lg:items-start lg:gap-12">
+    <div class="order-2 lg:order-1">
+      {% if reviews %}
+        <div class="divide-y divide-line overflow-hidden rounded-2xl border border-line bg-white shadow-panel">
+          {% for review in reviews %}
+            {% include "components/review_card.html" %}
+          {% endfor %}
+        </div>
+      {% else %}
+        <div class="rounded-2xl border-2 border-dashed border-line px-6 py-12 text-center">
+          <span class="mx-auto grid h-12 w-12 place-items-center rounded-2xl bg-lavender text-primary">{% include "components/icon.html" with name="chat" %}</span>
+          <p class="mt-3 font-bold">No reviews yet</p>
+          <p class="mt-1 text-sm text-muted">Not enough reviews yet to say how students feel about this course.</p>
+        </div>
+      {% endif %}
+    </div>
+
+    {# Review form: Users write or edit their review; visitors are asked to log in #}
+    <aside class="order-1 rounded-2xl border border-line bg-white p-6 shadow-panel lg:sticky lg:top-24 lg:order-2">
+      {% if review_form %}
+        <h3 class="text-lg font-bold">{% if review_form.instance.pk %}Edit your review{% else %}Write a review{% endif %}</h3>
+        <p class="mt-1 text-sm text-muted">One review per course. You can update it any time.</p>
+        <form method="post" action="{% url 'reviews:save' course.pk %}" class="mt-5 space-y-5">
+          {% csrf_token %}
+          {% include "components/form_fields.html" with form=review_form %}
+          {% if review_form.instance.pk %}
+            {% include "components/button.html" with label="Update review" full=True %}
+          {% else %}
+            {% include "components/button.html" with label="Post review" full=True %}
+          {% endif %}
+        </form>
+      {% elif current_user.is_organization %}
+        <h3 class="text-lg font-bold">Reviews are from students</h3>
+        <p class="mt-1 text-sm text-muted">College accounts can reply to reviews of their own courses from the dashboard.</p>
+      {% else %}
+        <h3 class="text-lg font-bold">Studied here?</h3>
+        <p class="mt-1 text-sm text-muted">Log in to rate this course and help others decide.</p>
+        <div class="mt-5">
+          {% url 'accounts:login' as login_url %}
+          {% include "components/button.html" with url=login_url label="Log in to review" full=True %}
+        </div>
+      {% endif %}
+    </aside>
+  </div>
+</section>
+
+{% include "components/compare_tray.html" %}
+{% endblock %}

@@ -1,0 +1,8 @@
+{# Flash messages (success, info, errors) shown at the top of every page #}
+{% if messages %}
+  <div class="mt-6 space-y-2">
+    {% for message in messages %}
+      {% include "components/alert.html" with tone=message.tags text=message %}
+    {% endfor %}
+  </div>
+{% endif %}

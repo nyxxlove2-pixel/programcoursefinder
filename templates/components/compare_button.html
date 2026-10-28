@@ -1,0 +1,10 @@
+{# Add/remove a course from the compare list. Needs `course` and `compare_ids`. Add full=True to fill the width. #}
+<form method="post" action="{% url 'courses:compare_toggle' course.pk %}">
+  {% csrf_token %}
+  <input type="hidden" name="next" value="{{ request.get_full_path }}">
+  {% if course.pk in compare_ids %}
+    {% include "components/button.html" with label="Comparing" icon="check" %}
+  {% else %}
+    {% include "components/button.html" with label="Compare" icon="plus" variant="ghost" %}
+  {% endif %}
+</form>

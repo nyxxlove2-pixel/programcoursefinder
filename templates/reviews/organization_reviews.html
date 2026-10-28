@@ -1,0 +1,39 @@
+{% extends "layouts/organization.html" %}
+{% block title %}Reviews · Program Course Finder{% endblock %}
+
+{% block content %}
+<section class="pt-8 lg:pt-10">
+  <div class="flex flex-col gap-5 sm:flex-row sm:items-end sm:justify-between">
+    <div>
+      <p class="text-sm font-semibold text-muted">Reviews</p>
+      <h1 class="mt-1 text-2xl font-extrabold tracking-tight sm:text-3xl">What students say</h1>
+      <p class="mt-2 max-w-xl text-muted">You can reply to any review. Reviews cannot be deleted; report fake or abusive ones.</p>
+    </div>
+
+    {# Filter tabs #}
+    <nav class="inline-flex shrink-0 self-start rounded-full border border-line bg-white p-1 sm:self-auto" aria-label="Filter reviews">
+      {% if needs_reply_only %}
+        {% include "components/filter_tab.html" with url="?" label="All" %}
+        {% include "components/filter_tab.html" with url="?show=needs_reply" label="Needs reply" active=True %}
+      {% else %}
+        {% include "components/filter_tab.html" with url="?" label="All" active=True %}
+        {% include "components/filter_tab.html" with url="?show=needs_reply" label="Needs reply" %}
+      {% endif %}
+    </nav>
+  </div>
+
+  {% if reviews %}
+    <div class="mt-6 divide-y divide-line overflow-hidden rounded-2xl border border-line bg-white shadow-panel">
+      {% for review in reviews %}
+        {% include "components/review_card.html" with show_course=True %}
+      {% endfor %}
+    </div>
+  {% else %}
+    <div class="mt-6 rounded-2xl border-2 border-dashed border-line px-6 py-14 text-center">
+      <span class="mx-auto grid h-12 w-12 place-items-center rounded-2xl bg-lavender text-primary">{% include "components/icon.html" with name="chat" %}</span>
+      <p class="mt-3 font-bold">{% if needs_reply_only %}Every review has a reply{% else %}No reviews yet{% endif %}</p>
+      <p class="mt-1 text-sm text-muted">New reviews will show up here and in your notifications.</p>
+    </div>
+  {% endif %}
+</section>
+{% endblock %}

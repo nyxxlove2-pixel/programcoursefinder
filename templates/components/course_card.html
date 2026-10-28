@@ -1,0 +1,37 @@
+{% load formatting %}
+{# One course as a card. Needs `course` (with .distance from add_distances) and `compare_ids`. #}
+<article class="flex flex-col rounded-2xl border border-line bg-white p-5 shadow-panel transition hover:-translate-y-0.5 hover:border-primary/30 hover:shadow-soft">
+  <div class="flex items-start justify-between gap-3">
+    {% include "components/monogram.html" with name=course.organization.name %}
+    <div class="flex flex-col items-end gap-1.5">
+      {% include "components/verified_badge.html" %}
+      {% if course.distance is not None %}
+        <span class="inline-flex items-center gap-1 text-xs font-semibold text-muted">
+          {% include "components/icon.html" with name="pin" size="h-3.5 w-3.5" %}{{ course.distance|km }}
+        </span>
+      {% endif %}
+    </div>
+  </div>
+
+  <h3 class="mt-4 text-lg font-bold leading-snug tracking-tight">
+    <a href="{% url 'courses:detail' course.pk %}" class="hover:text-primary">{{ course.name }}</a>
+  </h3>
+  <a href="{% url 'organizations:detail' course.organization.pk %}" class="mt-1 text-sm font-medium text-muted hover:text-primary">
+    {{ course.organization.name }}
+  </a>
+  <div class="mt-3">{% include "components/stars.html" with rating=course.average_rating count=course.review_count %}</div>
+  {% if course.description %}<p class="mt-3 line-clamp-2 text-sm leading-relaxed text-muted">{{ course.description }}</p>{% endif %}
+
+  {# mt-auto pushes the price and buttons to the bottom so cards in a row line up #}
+  <div class="mt-auto pt-5">
+    <div class="border-t border-line pt-4">
+      <p class="text-xs font-semibold uppercase tracking-wider text-muted">Yearly tuition</p>
+      <p class="mt-0.5 text-xl font-extrabold tracking-tight text-primary">{{ course.yearly_tuition|peso }}</p>
+    </div>
+    <div class="mt-4 flex flex-wrap items-center gap-2">
+      {% url 'courses:detail' course.pk as detail_url %}
+      {% include "components/button.html" with url=detail_url label="View details" variant="outline" %}
+      {% include "components/compare_button.html" %}
+    </div>
+  </div>
+</article>

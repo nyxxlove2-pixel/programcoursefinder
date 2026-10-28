@@ -1,0 +1,11 @@
+{% comment %}
+  Renders every field of a form with label, help text, and errors.
+  Usage: include "components/form_fields.html" with form=form
+{% endcomment %}
+{% if form.non_field_errors %}
+  {% include "components/alert.html" with tone="error" text=form.non_field_errors|join:" " %}
+{% endif %}
+
+{% for field in form %}
+  {% include "components/form_field.html" %}
+{% endfor %}

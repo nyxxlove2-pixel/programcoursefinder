@@ -1,0 +1,10 @@
+{% extends "layouts/auth_page.html" %}
+{% block title %}Register · Program Course Finder{% endblock %}
+{% block heading %}Create your <span class="text-primary">account</span>{% endblock %}
+{% block subheading %}Choose "User" to find courses, or "Organization" if you manage a college.{% endblock %}
+{% block actions %}{% include "components/button.html" with label="Create account" full=True %}{% endblock %}
+{% block below_form %}
+  <p class="mt-8 border-t border-line pt-6 text-center text-sm text-muted">
+    Already have an account? <a href="{% url 'accounts:login' %}" class="font-semibold text-primary hover:text-primary-dark">Log in</a>
+  </p>
+{% endblock %}

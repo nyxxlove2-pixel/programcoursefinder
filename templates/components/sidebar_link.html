@@ -1,0 +1,8 @@
+{# Organization sidebar item. Usage: include "components/sidebar_link.html" with url=... label=... icon="overview" count=3 (count optional) #}
+<a href="{{ url }}" {% if request.path == url %}aria-current="page"{% endif %}
+   class="flex min-h-[44px] items-center gap-3 rounded-xl px-3 text-[15px] font-semibold transition
+          {% if request.path == url %}bg-lavender text-primary{% else %}text-muted hover:bg-lavender/60 hover:text-ink{% endif %}">
+  {% include "components/icon.html" with name=icon %}
+  {{ label }}
+  {% if count %}<span class="ml-auto rounded-full bg-accent px-2 py-0.5 text-xs font-bold text-white">{{ count }}</span>{% endif %}
+</a>

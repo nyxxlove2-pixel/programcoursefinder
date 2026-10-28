@@ -1,0 +1,30 @@
+{% extends base_layout %}
+{% comment %}
+  Shared settings-style layout for pages that are just a form: the title and notes on the
+  left, the form panel on the right (stacked on phones).
+  base_layout comes from accounts/context_processors.py, so organization form
+  pages get the sidebar layout and everyone else gets the normal navbar.
+  Child pages fill: heading, subheading, notes (optional), actions (the buttons).
+{% endcomment %}
+
+{% block content %}
+<div class="grid gap-8 py-8 lg:grid-cols-[17rem_1fr] lg:gap-12 lg:py-12">
+  <header class="lg:sticky lg:top-24 lg:self-start">
+    <h1 class="text-2xl font-extrabold tracking-tight sm:text-3xl">{% block heading %}{% endblock %}</h1>
+    <p class="mt-2 leading-relaxed text-muted">{% block subheading %}{% endblock %}</p>
+    {% block notes %}{% endblock %}
+  </header>
+
+  <form method="post" enctype="multipart/form-data"
+        class="max-w-2xl overflow-hidden rounded-2xl border border-line bg-white shadow-panel">
+    {% csrf_token %}
+    <div class="space-y-6 p-5 sm:p-8">
+      {% include "components/form_fields.html" with form=form %}
+    </div>
+    {# Buttons fill the width on phones and sit on the right on bigger screens #}
+    <div class="flex flex-col-reverse gap-2 border-t border-line bg-lavender/40 px-5 py-4 sm:flex-row sm:items-center sm:justify-end sm:px-8">
+      {% block actions %}{% include "components/button.html" with label="Save" %}{% endblock %}
+    </div>
+  </form>
+</div>
+{% endblock %}

@@ -1,0 +1,93 @@
+{% extends "base.html" %}
+{% block title %}AI assistant · Program Course Finder{% endblock %}
+
+{% block content %}
+<div class="grid gap-8 pt-10 sm:pt-14 lg:grid-cols-[1fr_18rem] lg:gap-12">
+  <section class="min-w-0">
+    <p class="inline-flex items-center gap-1.5 text-sm font-bold uppercase tracking-[0.14em] text-primary">
+      {% include "components/icon.html" with name="sparkle" size="h-4 w-4" %} AI assistant
+    </p>
+    <h1 class="mt-3 text-balance text-[2rem] font-extrabold leading-[1.1] tracking-tight sm:text-5xl">Ask about your <span class="text-primary">options</span></h1>
+    <p class="mt-4 max-w-xl text-lg leading-relaxed text-muted">Ask in plain words. Answers come only from verified courses, their reviews, tuition, and distance, with the source of each fact.</p>
+
+    {# ---------- Conversation ---------- #}
+    <div class="mt-8 overflow-hidden rounded-2xl border border-line bg-white shadow-panel">
+      {% if chat %}
+        <ol class="divide-y divide-line">
+          {% for turn in chat %}
+            <li class="space-y-4 p-5 sm:p-6">
+              <div class="flex items-start gap-3">
+                {% include "components/avatar.html" with name=current_user.full_name %}
+                <p class="pt-1.5 font-semibold">{{ turn.question }}</p>
+              </div>
+              <div class="flex items-start gap-3">
+                <span class="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-lavender text-primary">{% include "components/icon.html" with name="sparkle" size="h-4 w-4" %}</span>
+                <div class="min-w-0 pt-1.5">
+                  <p class="leading-relaxed text-ink/80">{{ turn.answer|linebreaksbr }}</p>
+                  {% if turn.sources %}
+                    <p class="mt-4 text-xs font-bold uppercase tracking-wider text-muted">Sources</p>
+                    <ol class="mt-2 flex flex-wrap gap-2">
+                      {% for source in turn.sources %}
+                        <li>
+                          <a href="{% url 'courses:detail' source.id %}"
+                             class="inline-flex min-h-[36px] items-center gap-2 rounded-full border border-line px-3 text-sm hover:border-primary/40 hover:text-primary">
+                            <span class="font-bold text-primary">{{ forloop.counter }}</span>
+                            <span class="font-semibold">{{ source.name }}</span>
+                            <span class="hidden text-muted sm:inline">· {{ source.college }}</span>
+                          </a>
+                        </li>
+                      {% endfor %}
+                    </ol>
+                  {% endif %}
+                </div>
+              </div>
+            </li>
+          {% endfor %}
+        </ol>
+      {% else %}
+        {# Example questions: tapping one puts it in the box below #}
+        <div class="px-5 py-10 text-center sm:px-8">
+          <span class="mx-auto grid h-12 w-12 place-items-center rounded-2xl bg-lavender text-primary">{% include "components/icon.html" with name="sparkle" %}</span>
+          <p class="mt-3 font-bold">Try asking</p>
+          <div class="mt-4 flex flex-wrap justify-center gap-2">
+            {% for example in example_questions %}
+              <button type="button" onclick="document.getElementById('id_question').value = this.textContent.trim()"
+                      class="min-h-[44px] rounded-full border border-line px-4 text-sm font-semibold text-muted hover:border-primary/40 hover:text-primary">{{ example }}</button>
+            {% endfor %}
+          </div>
+        </div>
+      {% endif %}
+
+      {# ---------- Question box ---------- #}
+      <form method="post" class="border-t border-line bg-lavender/40 p-4 sm:p-5">
+        {% csrf_token %}
+        {% include "components/form_field.html" with field=form.question %}
+        <div class="mt-3 flex flex-col-reverse gap-2 sm:flex-row sm:items-center sm:justify-between">
+          {% if chat %}
+            <button form="clear-chat" class="min-h-[44px] rounded-full px-4 text-sm font-semibold text-muted hover:bg-lavender hover:text-primary">Clear chat</button>
+          {% else %}
+            <span></span>
+          {% endif %}
+          {% include "components/button.html" with label="Ask" icon="send" %}
+        </div>
+      </form>
+      <form id="clear-chat" method="post" action="{% url 'ai_assistant:clear_chat' %}">{% csrf_token %}</form>
+    </div>
+  </section>
+
+  {# ---------- How it works ---------- #}
+  <aside class="space-y-4 self-start lg:sticky lg:top-24 lg:mt-36">
+    {% if not has_location %}
+      {% include "components/alert.html" with tone="warning" title="No location yet." text="Add your location in My profile so answers can include distance." %}
+    {% endif %}
+    <div class="rounded-2xl border border-line bg-white p-5 shadow-panel">
+      <h2 class="text-sm font-bold uppercase tracking-[0.12em] text-muted">Good to know</h2>
+      <ul class="mt-3 space-y-3 text-sm leading-relaxed text-muted">
+        <li class="flex gap-2"><span class="text-primary">{% include "components/icon.html" with name="verified" size="h-4 w-4" %}</span>Only verified colleges are used. Ads never affect answers.</li>
+        <li class="flex gap-2"><span class="text-primary">{% include "components/icon.html" with name="info" size="h-4 w-4" %}</span>If the data is missing, it says it does not know.</li>
+        <li class="flex gap-2"><span class="text-primary">{% include "components/icon.html" with name="check" size="h-4 w-4" %}</span>It informs; the final choice is always yours.</li>
+      </ul>
+    </div>
+  </aside>
+</div>
+{% endblock %}

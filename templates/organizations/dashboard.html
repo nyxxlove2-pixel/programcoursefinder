@@ -1,0 +1,148 @@
+{% extends "layouts/organization.html" %}
+{% load formatting %}
+{% block title %}Dashboard · Program Course Finder{% endblock %}
+
+{% block content %}
+{# ---------- Page header ---------- #}
+<section class="flex flex-col gap-5 pt-8 sm:flex-row sm:items-end sm:justify-between lg:pt-10">
+  <div class="min-w-0">
+    <p class="text-sm font-semibold text-muted">Overview</p>
+    <div class="mt-1 flex flex-wrap items-center gap-3">
+      <h1 class="text-2xl font-extrabold tracking-tight sm:text-3xl">{{ organization.name }}</h1>
+      {% include "components/status_badge.html" with item=organization %}
+    </div>
+  </div>
+  <div class="flex flex-col gap-2 sm:flex-row">
+    {% if organization.is_verified %}
+      {% url 'organizations:detail' organization.pk as public_url %}
+      {% include "components/button.html" with url=public_url label="View public page" variant="ghost" icon="external" %}
+    {% endif %}
+    {% url 'reviews:organization_reviews' as reviews_url %}
+    {% include "components/button.html" with url=reviews_url label="See reviews" variant="ghost" icon="chat" %}
+  </div>
+</section>
+
+{# ---------- What the current status means ---------- #}
+<div class="mt-6">
+  {% if organization.is_verified %}
+    {% include "components/alert.html" with tone="success" text="Your college is verified. Your profile and courses are visible to everyone." %}
+  {% elif organization.status == 'pending' %}
+    {% include "components/alert.html" with title="Waiting for verification." text="Upload every document below. Your profile and courses stay hidden until they are approved." %}
+  {% else %}
+    {% with reason=organization.status_reason|default:"Please check your documents." %}
+      {% include "components/alert.html" with tone="warning" title=organization.get_status_display|add:":" text=reason|add:" Upload corrected documents to request a new review." %}
+    {% endwith %}
+  {% endif %}
+</div>
+
+{# ---------- Numbers at a glance (the 1px gap draws the lines between cells) ---------- #}
+<section class="mt-6 grid grid-cols-2 gap-px overflow-hidden rounded-2xl border border-line bg-line shadow-panel sm:grid-cols-3">
+  {% include "components/stat_card.html" with label="Overall rating" value=review_stats.average_rating|floatformat:1|default:"—" icon="check" note="Average over all your courses" %}
+  {% include "components/stat_card.html" with label="Needs a reply" value=review_stats.needs_reply total=review_stats.review_count icon="chat" note="Reviews not answered yet" %}
+  {% include "components/stat_card.html" with label="Likes / dislikes" value=review_stats.likes total=review_stats.dislikes icon="like" note="Reactions on your reviews" %}
+  {% include "components/stat_card.html" with label="Courses listed" value=courses|length icon="course" note="Shown on your public page" %}
+  {% include "components/stat_card.html" with label="Documents" value=documents_uploaded total=document_rows|length icon="document" note="Needed for verification" %}
+  {% if organization.is_verified %}
+    {% include "components/stat_card.html" with label="Visibility" value="Public" icon="external" note="Anyone can find your courses" %}
+  {% else %}
+    {% include "components/stat_card.html" with label="Visibility" value="Hidden" icon="external" note="Visible once approved" %}
+  {% endif %}
+</section>
+
+<div class="mt-6 grid gap-6 xl:grid-cols-3">
+  {# ---------- Courses ---------- #}
+  <section class="overflow-hidden rounded-2xl border border-line bg-white shadow-panel xl:col-span-2">
+    <div class="flex items-center justify-between gap-4 border-b border-line px-5 py-3 sm:px-6">
+      <h2 class="font-bold">Your courses <span class="ml-1 font-semibold text-muted">{{ courses|length }}</span></h2>
+      <div class="flex items-center gap-4">
+        <a href="{% url 'courses:bulk_upload' %}" class="inline-flex min-h-[44px] items-center gap-1.5 text-sm font-semibold text-muted hover:text-primary">
+          {% include "components/icon.html" with name="upload" size="h-4 w-4" %} Upload CSV
+        </a>
+        <a href="{% url 'courses:add' %}" class="inline-flex min-h-[44px] items-center gap-1.5 text-sm font-semibold text-primary hover:text-primary-dark">
+          {% include "components/icon.html" with name="plus" size="h-4 w-4" %} Add course
+        </a>
+      </div>
+    </div>
+    <ul class="divide-y divide-line">
+      {% for course in courses %}
+        <li class="flex items-center justify-between gap-4 px-5 py-4 transition hover:bg-lavender/40 sm:px-6">
+          <div class="flex min-w-0 items-center gap-4">
+            <span class="hidden h-11 w-11 shrink-0 place-items-center rounded-xl bg-lavender text-primary sm:grid">
+              {% include "components/icon.html" with name="course" %}
+            </span>
+            <div class="min-w-0">
+              <p class="truncate font-semibold">{{ course.name }}</p>
+              <p class="text-sm text-muted"><span class="font-semibold text-ink">{{ course.yearly_tuition|peso }}</span> / year · updated {{ course.last_updated|date:"M j, Y" }}</p>
+              <div class="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1">
+                {% include "components/stars.html" with rating=course.average_rating count=course.review_count %}
+                {% include "components/reaction_counts.html" %}
+              </div>
+            </div>
+          </div>
+          <div class="flex shrink-0 items-center">
+            <a href="{% url 'courses:edit' course.pk %}" aria-label="Edit {{ course.name }}" title="Edit"
+               class="grid h-11 w-11 place-items-center rounded-full text-muted hover:bg-lavender hover:text-primary">
+              {% include "components/icon.html" with name="edit" %}
+            </a>
+            <form method="post" action="{% url 'courses:delete' course.pk %}"
+                  onsubmit="return confirm('Delete this course?');">
+              {% csrf_token %}
+              <button aria-label="Delete {{ course.name }}" title="Delete"
+                      class="grid h-11 w-11 place-items-center rounded-full text-muted hover:bg-red-50 hover:text-red-600">
+                {% include "components/icon.html" with name="trash" %}
+              </button>
+            </form>
+          </div>
+        </li>
+      {% empty %}
+        <li class="px-6 py-14 text-center">
+          <span class="mx-auto grid h-12 w-12 place-items-center rounded-2xl bg-lavender text-primary">{% include "components/icon.html" with name="course" %}</span>
+          <p class="mt-3 font-bold">No courses yet</p>
+          <p class="mt-1 text-sm text-muted">Add your first course so students can find it.</p>
+          <div class="mt-5">
+            {% url 'courses:add' as add_url %}
+            {% include "components/button.html" with url=add_url label="Add course" icon="plus" %}
+          </div>
+        </li>
+      {% endfor %}
+    </ul>
+  </section>
+
+  {# ---------- Verification documents ---------- #}
+  <section class="self-start overflow-hidden rounded-2xl border border-line bg-white shadow-panel">
+    <div class="flex items-center justify-between gap-4 border-b border-line px-5 py-3">
+      <h2 class="font-bold">Verification</h2>
+      <a href="{% url 'organizations:upload_document' %}" class="inline-flex min-h-[44px] items-center gap-1.5 text-sm font-semibold text-primary hover:text-primary-dark">
+        {% include "components/icon.html" with name="plus" size="h-4 w-4" %} Upload
+      </a>
+    </div>
+
+    <div class="px-5 pt-5">
+      <div class="flex items-baseline justify-between text-sm">
+        <span class="font-semibold">{{ documents_uploaded }} of {{ document_rows|length }} uploaded</span>
+        <span class="font-bold text-primary">{{ documents_percent }}%</span>
+      </div>
+      <div class="mt-2 h-2 overflow-hidden rounded-full bg-lavender">
+        <div class="h-full rounded-full bg-primary" style="width: {{ documents_percent }}%"></div>
+      </div>
+    </div>
+
+    <ul class="mt-3 divide-y divide-line">
+      {% for row in document_rows %}
+        <li class="flex items-center justify-between gap-4 px-5 py-3">
+          <span class="flex min-w-0 items-center gap-2.5 text-sm">
+            <span class="{% if row.document %}text-green-600{% else %}text-line{% endif %}">{% include "components/icon.html" with name="verified" size="h-5 w-5" %}</span>
+            {{ row.label }}
+          </span>
+          {% if row.document %}
+            <a href="{% url 'organizations:view_document' row.document.pk %}" target="_blank"
+               class="inline-flex min-h-[44px] shrink-0 items-center text-sm font-semibold text-primary hover:text-primary-dark">View</a>
+          {% else %}
+            <span class="shrink-0 rounded-full bg-orange-50 px-2.5 py-0.5 text-xs font-bold text-accent">Missing</span>
+          {% endif %}
+        </li>
+      {% endfor %}
+    </ul>
+  </section>
+</div>
+{% endblock %}

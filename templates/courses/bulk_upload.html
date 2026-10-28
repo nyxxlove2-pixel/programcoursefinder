@@ -1,0 +1,30 @@
+{% extends "layouts/form_page.html" %}
+{% block title %}Upload courses · Program Course Finder{% endblock %}
+{% block heading %}Upload <span class="text-primary">courses</span>{% endblock %}
+{% block subheading %}Add many courses at once from a spreadsheet saved as CSV.{% endblock %}
+
+{% block notes %}
+  <ol class="mt-6 space-y-3 text-sm text-muted">
+    {% for step in steps %}
+      <li class="flex gap-3"><span class="grid h-6 w-6 shrink-0 place-items-center rounded-full bg-lavender text-xs font-bold text-primary">{{ forloop.counter }}</span>{{ step }}</li>
+    {% endfor %}
+  </ol>
+  <div class="mt-5">
+    {% url 'courses:csv_template' as template_url %}
+    {% include "components/button.html" with url=template_url label="Download template" icon="download" variant="ghost" %}
+  </div>
+  {% if errors %}
+    <div class="mt-6 space-y-2">
+      {% include "components/alert.html" with tone="error" title="Nothing was added." text="Fix these rows and upload again:" %}
+      <ul class="space-y-1 rounded-xl border border-red-200 bg-white px-4 py-3 text-sm text-red-700">
+        {% for error in errors %}<li>{{ error }}</li>{% endfor %}
+      </ul>
+    </div>
+  {% endif %}
+{% endblock %}
+
+{% block actions %}
+  {% url 'organizations:dashboard' as dashboard_url %}
+  {% include "components/button.html" with url=dashboard_url label="Cancel" variant="quiet" %}
+  {% include "components/button.html" with label="Upload courses" icon="upload" %}
+{% endblock %}

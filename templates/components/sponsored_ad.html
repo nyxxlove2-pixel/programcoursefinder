@@ -1,0 +1,25 @@
+{% comment %}
+  A paid ad, always labeled "Sponsored" so it is never mistaken for a search result.
+  Usage: include "components/sponsored_ad.html" with ad=ad
+{% endcomment %}
+<aside class="overflow-hidden rounded-2xl border border-line bg-white shadow-panel" aria-label="Sponsored">
+  {% if ad.ad_type == 'video' %}
+    <div class="aspect-video bg-ink">
+      <iframe src="{{ ad.embed_url }}" title="{{ ad.title }}" loading="lazy" class="h-full w-full"
+              allow="encrypted-media; picture-in-picture" allowfullscreen></iframe>
+    </div>
+  {% else %}
+    <a href="{{ ad.target_url }}" class="block bg-lavender">
+      <img src="{{ ad.media_url }}" alt="{{ ad.title }}" loading="lazy" class="aspect-[4/1] w-full object-cover">
+    </a>
+  {% endif %}
+  <div class="flex flex-wrap items-center justify-between gap-3 px-4 py-3 sm:px-5">
+    <div class="flex min-w-0 items-center gap-3">
+      <span class="shrink-0 rounded-full bg-ink/5 px-2.5 py-0.5 text-[11px] font-bold uppercase tracking-wider text-muted">Sponsored</span>
+      <p class="min-w-0 truncate text-sm"><strong class="font-bold">{{ ad.title }}</strong> <span class="text-muted">· {{ ad.organization.name }}</span></p>
+    </div>
+    <a href="{{ ad.target_url }}" class="inline-flex min-h-[44px] shrink-0 items-center gap-1.5 text-sm font-semibold text-primary hover:text-primary-dark">
+      Learn more {% include "components/icon.html" with name="arrow" size="h-4 w-4" %}
+    </a>
+  </div>
+</aside>

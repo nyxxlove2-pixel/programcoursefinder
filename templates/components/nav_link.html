@@ -1,0 +1,6 @@
+{# Usage: include "components/nav_link.html" with url=... label=... #}
+<a href="{{ url }}" {% if request.path == url %}aria-current="page"{% endif %}
+   class="flex min-h-[44px] items-center rounded-full px-4 font-semibold transition
+          {% if request.path == url %}bg-lavender text-primary md:bg-transparent{% else %}text-muted hover:text-ink{% endif %}">
+  {{ label }}
+</a>

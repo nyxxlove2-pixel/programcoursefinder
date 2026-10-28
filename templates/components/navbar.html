@@ -1,0 +1,70 @@
+{% comment %}
+  Top navigation for the public site and for User accounts. Links change by role:
+  visitors see Login/Register, users see their own pages, and organizations get a
+  way back to their dashboard. On phones the links fold into a menu under the bar.
+{% endcomment %}
+{% url 'courses:search' as courses_url %}
+{% url 'courses:compare' as compare_url %}
+<header class="sticky top-0 z-40 border-b border-line/70 bg-white/80 backdrop-blur-md">
+  <nav class="relative mx-auto flex h-16 max-w-6xl items-center justify-between gap-4 px-4 sm:px-6">
+    {% include "components/logo.html" %}
+    {% include "components/menu_button.html" with target="nav-menu" %}
+
+    <div id="nav-menu"
+         class="absolute inset-x-0 top-full hidden flex-col gap-1 border-b border-line bg-white px-4 pb-5 pt-3 shadow-soft
+                md:static md:flex md:flex-1 md:flex-row md:items-center md:justify-between md:border-0 md:bg-transparent md:p-0 md:shadow-none">
+      <div class="flex flex-col gap-1 md:flex-row md:pl-8">
+        {% if current_user %}
+          {% include "components/nav_link.html" with url=courses_url label="Find courses" %}
+        {% else %}
+          {% url 'core:home' as home_url %}
+          {% include "components/nav_link.html" with url=home_url label="Home" %}
+          {% include "components/nav_link.html" with url=courses_url label="Courses" %}
+        {% endif %}
+        {% if not current_user.is_organization %}
+          {% include "components/nav_link.html" with url=compare_url label="Compare" %}
+        {% endif %}
+        {% if current_user and not current_user.is_organization %}
+          {% url 'ai_assistant:assistant' as assistant_url %}
+          {% include "components/nav_link.html" with url=assistant_url label="Ask AI" %}
+        {% endif %}
+      </div>
+
+      <div class="mt-3 flex flex-col gap-2 border-t border-line pt-4 md:mt-0 md:flex-row md:items-center md:border-0 md:pt-0">
+        {% if current_user.is_organization %}
+          {% url 'organizations:dashboard' as dashboard_url %}
+          {% include "components/button.html" with url=dashboard_url label="Back to dashboard" icon="overview" %}
+        {% elif current_user %}
+          <a href="{% url 'notifications:list' %}" aria-label="Notifications ({{ unread_notifications }} unread)"
+             class="relative flex min-h-[44px] items-center gap-3 rounded-full px-3 font-semibold text-muted hover:bg-lavender hover:text-primary md:w-11 md:justify-center md:px-0">
+            {% include "components/icon.html" with name="bell" %}
+            <span class="md:hidden">Notifications</span>
+            {% if unread_notifications %}
+              <span class="ml-auto rounded-full bg-accent px-2 py-0.5 text-xs font-bold text-white md:absolute md:right-0.5 md:top-0.5 md:ml-0 md:px-1.5">{{ unread_notifications }}</span>
+            {% endif %}
+          </a>
+          <a href="{% url 'accounts:profile' %}"
+             class="flex min-h-[44px] items-center gap-2.5 rounded-full py-1 pl-1 pr-4 font-semibold hover:bg-lavender">
+            {% include "components/avatar.html" with name=current_user.full_name %}
+            My profile
+          </a>
+        {% else %}
+          {% url 'accounts:login' as login_url %}
+          {% url 'accounts:register' as register_url %}
+          {% include "components/button.html" with url=login_url label="Login" variant="outline" %}
+          {% include "components/button.html" with url=register_url label="Register" %}
+        {% endif %}
+
+        {% if current_user %}
+          <form method="post" action="{% url 'accounts:logout' %}">
+            {% csrf_token %}
+            <button aria-label="Log out" title="Log out"
+                    class="flex min-h-[44px] w-full items-center gap-3 rounded-full px-3 font-semibold text-muted hover:bg-red-50 hover:text-red-600 md:w-11 md:justify-center md:px-0">
+              {% include "components/icon.html" with name="logout" %}<span class="md:hidden">Log out</span>
+            </button>
+          </form>
+        {% endif %}
+      </div>
+    </div>
+  </nav>
+</header>

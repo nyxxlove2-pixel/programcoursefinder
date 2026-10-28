@@ -1,0 +1,6 @@
+{# One tab in a pill-shaped tab bar (see reviews/organization_reviews.html). Usage: include "components/filter_tab.html" with url="?show=x" label="..." active=True #}
+<a href="{{ url }}" {% if active %}aria-current="page"{% endif %}
+   class="inline-flex min-h-[40px] items-center rounded-full px-5 text-sm font-semibold transition
+          {% if active %}bg-primary text-white shadow-sm{% else %}text-muted hover:text-ink{% endif %}">
+  {{ label }}
+</a>

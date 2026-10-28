@@ -1,0 +1,19 @@
+{% load formatting %}
+{% comment %}
+  Five gold stars for a rating. Usage: include "components/stars.html" with rating=4.2 count=12
+  count is optional; with it, the number of reviews is shown too.
+{% endcomment %}
+<span class="inline-flex items-center gap-1.5" aria-label="{{ rating|floatformat:1|default:'No' }} out of 5 stars">
+  <span class="flex" aria-hidden="true">
+    {% for filled in rating|stars %}
+      <svg class="{{ size|default:'h-4 w-4' }} {% if filled %}text-star{% else %}text-line{% endif %}" viewBox="0 0 24 24" fill="currentColor">
+        <path d="M10.79 3.21c.45-1.08 1.97-1.08 2.42 0l2.08 5.01 5.4.43c1.17.1 1.64 1.55.75 2.3l-4.11 3.53 1.25 5.28c.27 1.13-.96 2.03-1.96 1.42L12 18.35l-4.63 2.83c-1 .61-2.23-.29-1.96-1.42l1.26-5.28-4.12-3.53c-.89-.75-.41-2.2.75-2.3l5.4-.43 2.09-5.01Z"/>
+      </svg>
+    {% endfor %}
+  </span>
+  {% if count is not None %}
+    <span class="text-sm text-muted">
+      {% if count %}<strong class="text-ink">{{ rating|floatformat:1 }}</strong> ({{ count }} review{{ count|pluralize }}){% else %}No reviews yet{% endif %}
+    </span>
+  {% endif %}
+</span>

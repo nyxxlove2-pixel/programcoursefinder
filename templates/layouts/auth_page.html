@@ -1,0 +1,67 @@
+{% extends "base.html" %}
+{% load static %}
+{% comment %}
+  Split-screen layout for Log in and Register: the form on the left, a purple brand panel
+  on the right (desktop only). Child pages fill: heading, subheading, actions, below_form.
+{% endcomment %}
+
+{% block body_class %}bg-white{% endblock %}
+
+{% block body %}
+<div class="grid min-h-screen lg:grid-cols-[1fr_1.05fr]">
+  {# ---------- Form side ---------- #}
+  <div class="flex flex-col px-4 py-5 sm:px-10 lg:px-16">
+    <header class="flex items-center justify-between gap-4">
+      {% include "components/logo.html" %}
+      {% url 'courses:search' as search_url %}
+      <span class="hidden sm:block">{% include "components/button.html" with url=search_url label="Browse courses" variant="quiet" %}</span>
+    </header>
+
+    <main class="mx-auto flex w-full max-w-md flex-1 flex-col justify-center py-12">
+      {% include "components/messages.html" %}
+      <h1 class="mt-6 text-[2rem] font-extrabold leading-tight tracking-tight sm:text-4xl">{% block heading %}{% endblock %}</h1>
+      <p class="mt-3 leading-relaxed text-muted">{% block subheading %}{% endblock %}</p>
+
+      <form method="post" class="mt-8 space-y-5">
+        {% csrf_token %}
+        {% include "components/form_fields.html" with form=form %}
+        <div class="pt-2">{% block actions %}{% endblock %}</div>
+      </form>
+
+      {% block below_form %}{% endblock %}
+    </main>
+
+    <p class="text-center text-xs text-muted lg:text-left">Only verified colleges are listed on Program Course Finder.</p>
+  </div>
+
+  {# ---------- Brand panel (desktop only) ---------- #}
+  <aside class="relative m-3 hidden overflow-hidden rounded-[28px] bg-primary text-white lg:flex lg:flex-col">
+    <div class="absolute -right-24 -top-24 h-80 w-80 rounded-full bg-accent" aria-hidden="true"></div>
+    <div class="absolute -left-20 bottom-24 h-64 w-64 rounded-full bg-white/10" aria-hidden="true"></div>
+    <div class="absolute inset-0 bg-[radial-gradient(rgba(255,255,255,0.14)_1px,transparent_1px)] [background-size:22px_22px]" aria-hidden="true"></div>
+
+    <div class="relative px-12 pt-14 xl:px-16">
+      <span class="inline-flex items-center gap-2 rounded-full bg-white/15 px-4 py-1.5 text-sm font-semibold ring-1 ring-white/25">
+        {% include "components/icon.html" with name="verified" size="h-4 w-4" %} Verified colleges only
+      </span>
+      <p class="mt-6 max-w-md text-4xl font-extrabold leading-[1.1] tracking-tight xl:text-5xl">
+        Every course. Every college. <span class="text-white/70">One honest comparison.</span>
+      </p>
+      <ul class="mt-8 space-y-3 text-white/90">
+        <li class="flex items-center gap-3">{% include "components/icon.html" with name="check" size="h-5 w-5" %} Tuition and distance side by side</li>
+        <li class="flex items-center gap-3">{% include "components/icon.html" with name="check" size="h-5 w-5" %} Real reviews from real students</li>
+        <li class="flex items-center gap-3">{% include "components/icon.html" with name="check" size="h-5 w-5" %} Free to search, always</li>
+      </ul>
+    </div>
+
+    <div class="relative mt-auto flex justify-end pr-10">
+      <img src="{% static 'images/hero.png' %}" alt="" class="h-[22rem] w-auto object-contain object-bottom xl:h-[26rem]">
+      <div class="absolute bottom-10 left-12 w-60 rounded-2xl bg-white p-4 text-ink shadow-soft xl:left-16">
+        {% include "components/stars.html" with rating=5 %}
+        <p class="mt-2 text-sm font-bold">Compare up to 3 courses</p>
+        <p class="text-xs text-muted">Tuition, distance, and reviews at a glance</p>
+      </div>
+    </div>
+  </aside>
+</div>
+{% endblock %}

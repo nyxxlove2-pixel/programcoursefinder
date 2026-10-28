@@ -1,0 +1,18 @@
+{% comment %}
+  Inline notice with an icon. Used for flash messages, form errors, and status notes.
+  Usage: include "components/alert.html" with tone="success" title="Optional bold start" text="..."
+  tone: "success", "error", "warning", or (empty) for a neutral purple note
+{% endcomment %}
+<div role="{% if tone == 'error' %}alert{% else %}status{% endif %}"
+     class="flex gap-3 rounded-xl border px-4 py-3 text-sm leading-relaxed
+            {% if tone == 'success' %}border-green-200 bg-green-50 text-green-800
+            {% elif tone == 'error' %}border-red-200 bg-red-50 text-red-700
+            {% elif tone == 'warning' %}border-orange-200 bg-orange-50 text-ink
+            {% else %}border-line bg-lavender text-ink{% endif %}">
+  <span class="pt-0.5 {% if tone == 'warning' %}text-accent{% elif not tone %}text-primary{% endif %}">
+    {% if tone == 'success' %}{% include "components/icon.html" with name="verified" size="h-5 w-5" %}
+    {% elif tone == 'error' or tone == 'warning' %}{% include "components/icon.html" with name="alert" size="h-5 w-5" %}
+    {% else %}{% include "components/icon.html" with name="info" size="h-5 w-5" %}{% endif %}
+  </span>
+  <p>{% if title %}<strong class="font-semibold">{{ title }}</strong> {% endif %}{{ text }}</p>
+</div>

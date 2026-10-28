@@ -1,0 +1,10 @@
+{% comment %}
+  "Report" link, shown to logged-in accounts only.
+  Usage: include "components/report_link.html" with target_type="course" target_id=course.pk label="Report"
+{% endcomment %}
+{% if current_user %}
+  <a href="{% url 'reviews:report' target_type target_id %}"
+     class="inline-flex min-h-[44px] items-center gap-1.5 rounded-full px-4 text-sm font-semibold text-muted hover:text-accent">
+    {% include "components/icon.html" with name="flag" size="h-4 w-4" %} {{ label|default:"Report wrong info" }}
+  </a>
+{% endif %}

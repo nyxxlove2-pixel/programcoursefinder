@@ -1,0 +1,83 @@
+{% extends "layouts/organization.html" %}
+{% comment %}
+  Add or edit one course. The form is split into "Course details" and "Tuition" sections,
+  with tips on the right (below the form on phones).
+{% endcomment %}
+{% block title %}{% if course %}Edit{% else %}Add{% endif %} course · Program Course Finder{% endblock %}
+
+{% block content %}
+{% url 'organizations:dashboard' as dashboard_url %}
+
+{# ---------- Page header ---------- #}
+<nav class="flex items-center gap-2 pt-8 text-sm text-muted lg:pt-10" aria-label="Breadcrumb">
+  <a href="{{ dashboard_url }}" class="font-semibold hover:text-primary">Overview</a>
+  <span aria-hidden="true">/</span>
+  <span class="truncate">{% if course %}{{ course.name }}{% else %}Add course{% endif %}</span>
+</nav>
+
+<div class="mt-3 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+  <div>
+    <h1 class="text-2xl font-extrabold tracking-tight sm:text-3xl">{% if course %}Edit{% else %}Add a{% endif %} <span class="text-primary">course</span></h1>
+    <p class="mt-2 text-muted">
+      {% if course %}Last updated {{ course.last_updated|date:"M j, Y" }}. Students see this date next to the tuition.
+      {% else %}Students see this as soon as your college is verified.{% endif %}
+    </p>
+  </div>
+  {% if not course %}
+    {% url 'courses:bulk_upload' as upload_url %}
+    {% include "components/button.html" with url=upload_url label="Upload many from CSV" icon="upload" variant="ghost" %}
+  {% endif %}
+</div>
+
+<div class="mt-8 grid gap-6 lg:grid-cols-[1fr_18rem] lg:items-start">
+  {# ---------- Form ---------- #}
+  <form method="post" class="overflow-hidden rounded-2xl border border-line bg-white shadow-panel">
+    {% csrf_token %}
+    {% if form.non_field_errors %}
+      <div class="px-5 pt-5 sm:px-8">{% include "components/alert.html" with tone="error" text=form.non_field_errors|join:" " %}</div>
+    {% endif %}
+
+    <section class="space-y-6 p-5 sm:p-8">
+      <h2 class="flex items-center gap-3">
+        <span class="grid h-9 w-9 place-items-center rounded-xl bg-lavender text-primary">{% include "components/icon.html" with name="course" size="h-5 w-5" %}</span>
+        <span class="font-bold">Course details</span>
+      </h2>
+      {% include "components/form_field.html" with field=form.name %}
+      {% include "components/form_field.html" with field=form.description %}
+    </section>
+
+    <section class="space-y-6 border-t border-line p-5 sm:p-8">
+      <h2 class="flex items-center gap-3">
+        <span class="grid h-9 w-9 place-items-center rounded-xl bg-lavender text-primary">{% include "components/icon.html" with name="money" size="h-5 w-5" %}</span>
+        <span class="font-bold">Tuition</span>
+      </h2>
+      <div class="grid gap-6 sm:grid-cols-2">
+        {% include "components/form_field.html" with field=form.yearly_tuition prefix="₱" %}
+        {% include "components/form_field.html" with field=form.term_tuition prefix="₱" %}
+      </div>
+    </section>
+
+    {# Buttons fill the width on phones and sit on the right on bigger screens #}
+    <div class="flex flex-col-reverse gap-2 border-t border-line bg-lavender/40 px-5 py-4 sm:flex-row sm:items-center sm:justify-end sm:px-8">
+      {% include "components/button.html" with url=dashboard_url label="Cancel" variant="quiet" %}
+      {% if course %}
+        {% include "components/button.html" with label="Save changes" icon="check" %}
+      {% else %}
+        {% include "components/button.html" with label="Add course" icon="plus" %}
+      {% endif %}
+    </div>
+  </form>
+
+  {# ---------- Tips ---------- #}
+  <aside class="rounded-2xl border border-line bg-white p-5 shadow-panel lg:sticky lg:top-24">
+    <p class="flex items-center gap-2 font-bold">
+      <span class="text-primary">{% include "components/icon.html" with name="sparkle" %}</span> Tips for a good listing
+    </p>
+    <ul class="mt-4 space-y-3 text-sm leading-relaxed text-muted">
+      <li class="flex gap-2.5"><span class="mt-0.5 text-primary">{% include "components/icon.html" with name="check" size="h-4 w-4" %}</span>Use the official program name so students can search for it.</li>
+      <li class="flex gap-2.5"><span class="mt-0.5 text-primary">{% include "components/icon.html" with name="check" size="h-4 w-4" %}</span>Write tuition as plain numbers, like 40000.</li>
+      <li class="flex gap-2.5"><span class="mt-0.5 text-primary">{% include "components/icon.html" with name="check" size="h-4 w-4" %}</span>Update tuition each school year. Students trust recent dates.</li>
+    </ul>
+  </aside>
+</div>
+{% endblock %}

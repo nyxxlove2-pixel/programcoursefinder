@@ -1,0 +1,8 @@
+{% extends "layouts/form_page.html" %}
+{% block title %}My profile · Program Course Finder{% endblock %}
+{% block heading %}My <span class="text-primary">profile</span>{% endblock %}
+{% block subheading %}Tell colleges a little about yourself and add your location to see distances.{% endblock %}
+{% block notes %}
+  <div class="mt-6">{% include "components/alert.html" with text="Your location is only used to show distances, and only if you tick the box." %}</div>
+{% endblock %}
+{% block actions %}{% include "components/button.html" with label="Save profile" %}{% endblock %}

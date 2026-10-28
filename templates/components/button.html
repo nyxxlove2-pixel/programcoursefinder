@@ -1,0 +1,16 @@
+{% comment %}
+  Pill-shaped button. With a url it is a link; without one it is a form submit button.
+  Usage: include "components/button.html" with url=... label=... variant="outline" icon="plus" full=True
+  variant: (empty) = filled purple, "outline" = white with purple border, "ghost" = soft, "quiet" = text only
+  icon (optional) shows before the label; full=True stretches it to the full width.
+{% endcomment %}
+{% if url %}<a href="{{ url }}"{% else %}<button type="submit"{% endif %}
+   class="inline-flex min-h-[44px] items-center justify-center gap-2 whitespace-nowrap rounded-full px-6 py-2.5 text-center font-semibold transition
+          focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-primary/25 {% if full %}w-full{% endif %}
+          {% if variant == 'outline' %}border border-primary/40 bg-white text-primary hover:border-primary hover:bg-lavender
+          {% elif variant == 'ghost' %}border border-line bg-white text-ink hover:border-primary/40 hover:text-primary
+          {% elif variant == 'quiet' %}text-muted hover:bg-lavender hover:text-primary
+          {% else %}bg-primary text-white shadow-[0_6px_16px_-6px_rgba(91,79,233,0.6)] hover:-translate-y-0.5 hover:bg-primary-dark{% endif %}">
+  {% if icon %}{% include "components/icon.html" with name=icon size="h-4 w-4" %}{% endif %}
+  {{ label }}
+{% if url %}</a>{% else %}</button>{% endif %}

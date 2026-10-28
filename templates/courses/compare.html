@@ -1,0 +1,53 @@
+{% extends "base.html" %}
+{% load formatting %}
+{% block title %}Compare · Program Course Finder{% endblock %}
+
+{% block content %}
+<section class="pt-10 sm:pt-14">
+  <p class="text-sm font-bold uppercase tracking-[0.14em] text-primary">Side by side</p>
+  <h1 class="mt-3 text-[2rem] font-extrabold leading-tight tracking-tight sm:text-5xl">Compare <span class="text-primary">courses</span></h1>
+  <p class="mt-3 text-lg text-muted">Up to 3 courses side by side. On a phone, swipe left and right.</p>
+
+  {% if courses %}
+    {# Swipeable cards on phones, a 3-column grid on bigger screens #}
+    <div class="-mx-4 mt-10 flex snap-x snap-mandatory gap-4 overflow-x-auto px-4 pb-4 md:mx-0 md:grid md:grid-cols-3 md:gap-5 md:overflow-visible md:px-0">
+      {% for course in courses %}
+        <article class="flex w-[85%] shrink-0 snap-center flex-col rounded-2xl border border-line bg-white shadow-panel md:w-auto">
+          <div class="border-b border-line p-6">
+            <div class="flex items-start justify-between gap-3">
+              {% include "components/monogram.html" with name=course.organization.name %}
+              {% include "components/verified_badge.html" %}
+            </div>
+            <h2 class="mt-4 text-lg font-bold leading-snug tracking-tight">
+              <a href="{% url 'courses:detail' course.pk %}" class="hover:text-primary">{{ course.name }}</a>
+            </h2>
+            <p class="mt-1 text-sm text-muted">{{ course.organization.name }}</p>
+            <p class="mt-4 text-2xl font-extrabold tracking-tight text-primary">{{ course.yearly_tuition|peso }}<span class="text-sm font-medium text-muted"> / year</span></p>
+            <div class="mt-2">{% include "components/stars.html" with rating=course.average_rating count=course.review_count %}</div>
+          </div>
+          <dl class="px-6 py-2">
+            {% include "components/info_row.html" with label="Per term" value=course.term_tuition|peso %}
+            {% include "components/info_row.html" with label="Distance" value=course.distance|km %}
+            {% include "components/info_row.html" with label="Address" value=course.organization.address %}
+            {% include "components/info_row.html" with label="Updated" value=course.last_updated|date:"M j, Y" %}
+          </dl>
+          <form method="post" action="{% url 'courses:compare_toggle' course.pk %}" class="mt-auto border-t border-line p-4">
+            {% csrf_token %}
+            {% include "components/button.html" with label="Remove" icon="close" variant="quiet" full=True %}
+          </form>
+        </article>
+      {% endfor %}
+    </div>
+  {% else %}
+    <div class="mt-10 rounded-2xl border-2 border-dashed border-line px-6 py-14 text-center">
+      <span class="mx-auto grid h-14 w-14 place-items-center rounded-2xl bg-lavender text-primary">{% include "components/icon.html" with name="compare" size="h-6 w-6" %}</span>
+      <p class="mt-4 text-lg font-bold">Nothing to compare yet</p>
+      <p class="mt-1 text-sm text-muted">Tap "Compare" on any course to add it here.</p>
+      <div class="mt-6">
+        {% url 'courses:search' as search_url %}
+        {% include "components/button.html" with url=search_url label="Find courses" %}
+      </div>
+    </div>
+  {% endif %}
+</section>
+{% endblock %}

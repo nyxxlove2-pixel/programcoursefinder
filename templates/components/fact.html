@@ -1,0 +1,8 @@
+{# One key fact in a fact grid (icon, small label, bold value). Usage: include "components/fact.html" with icon="money" label="..." value=... #}
+<div class="flex items-start gap-3 bg-white p-4 sm:p-5">
+  <span class="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-lavender text-primary">{% include "components/icon.html" with name=icon %}</span>
+  <div class="min-w-0">
+    <dt class="text-[13px] font-semibold text-muted">{{ label }}</dt>
+    <dd class="mt-0.5 break-words font-bold">{{ value|default:"—" }}</dd>
+  </div>
+</div>

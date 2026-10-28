@@ -1,0 +1,5 @@
+{# Brand logo (from image.png): purple square with the "p" mark, plus the name. Usage: include "components/logo.html" (compact=True keeps it small, e.g. in the sidebar) #}
+<a href="{% url 'core:home' %}" class="flex shrink-0 items-center gap-2.5 whitespace-nowrap font-extrabold tracking-tight text-ink {% if compact %}text-[15px]{% else %}text-base sm:text-lg{% endif %}">
+  {% include "components/logo_mark.html" %}
+  Program Course Finder
+</a>

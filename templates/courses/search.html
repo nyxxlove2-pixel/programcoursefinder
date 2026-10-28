@@ -1,0 +1,115 @@
+{% extends "base.html" %}
+{% block title %}Find courses · Program Course Finder{% endblock %}
+
+{% block content %}
+{# ---------- Header with the big search bar ---------- #}
+<section class="relative pt-10 sm:pt-14">
+  {# Decorative shapes from the design (desktop only) #}
+  <div class="pointer-events-none absolute right-4 top-8 hidden md:block" aria-hidden="true">
+    <div class="h-28 w-28 rounded-full bg-accent/90"></div>
+    <div class="absolute -left-10 top-16 h-16 w-16 rounded-l-full bg-primary"></div>
+    <span class="absolute -left-20 top-2 h-3.5 w-3.5 rotate-45 rounded-sm bg-primary"></span>
+  </div>
+
+  <div class="relative max-w-2xl">
+    <p class="text-sm font-bold uppercase tracking-[0.14em] text-primary">
+      {% if current_user and not current_user.is_organization %}Hi, {{ current_user.full_name }}{% else %}Verified colleges only{% endif %}
+    </p>
+    <h1 class="mt-3 text-balance text-[2rem] font-extrabold leading-[1.1] tracking-tight sm:text-5xl">Find the course that <span class="text-primary">fits you</span></h1>
+    <p class="mt-4 max-w-xl text-lg leading-relaxed text-muted">Search every verified college in one place. Filter by tuition and distance, then compare up to 3 courses.</p>
+  </div>
+
+  <form id="course-search" method="get" action="{% url 'courses:search' %}"
+        class="relative mt-8 flex max-w-3xl flex-col gap-3 sm:flex-row">
+    <label for="{{ form.query.id_for_label }}" class="sr-only">{{ form.query.label }}</label>
+    <div class="relative flex-1">
+      <span class="pointer-events-none absolute left-5 top-1/2 -translate-y-1/2 text-muted">
+        {% include "components/icon.html" with name="search" %}
+      </span>
+      {{ form.query }}
+    </div>
+    {% include "components/button.html" with label="Search" %}
+  </form>
+</section>
+
+{% with filter_count=form.active_filter_count %}
+<div class="mt-12 border-t border-line pt-8 lg:grid lg:grid-cols-[16rem_1fr] lg:items-start lg:gap-10">
+  {# ---------- Filters: a plain column on desktop, a fold-out panel on phones ---------- #}
+  <aside class="lg:sticky lg:top-24">
+    <button type="button" aria-controls="search-filters"
+            class="flex min-h-[48px] w-full items-center justify-center gap-2 rounded-full border border-line bg-white font-semibold hover:border-primary/40 lg:hidden"
+            onclick="document.getElementById('search-filters').classList.toggle('hidden')">
+      {% include "components/icon.html" with name="filters" %}
+      Filters{% if filter_count %} <span class="rounded-full bg-primary px-2 py-0.5 text-xs text-white">{{ filter_count }}</span>{% endif %}
+    </button>
+
+    <div id="search-filters"
+         class="mt-3 hidden space-y-6 rounded-2xl border border-line bg-white p-5 lg:mt-0 lg:block lg:border-0 lg:bg-transparent lg:p-0">
+      <div class="flex items-center justify-between gap-2">
+        <h2 class="text-sm font-bold uppercase tracking-[0.12em] text-muted">Filters</h2>
+        {% if request.GET %}
+          <a href="{% url 'courses:search' %}" class="text-sm font-semibold text-primary hover:text-primary-dark">Clear all</a>
+        {% endif %}
+      </div>
+
+      {% include "components/form_field.html" with field=form.college %}
+
+      <fieldset>
+        <legend class="text-sm font-semibold">Yearly tuition</legend>
+        <div class="mt-2 grid grid-cols-2 gap-3 text-sm">
+          {% include "components/form_field.html" with field=form.min_tuition %}
+          {% include "components/form_field.html" with field=form.max_tuition %}
+        </div>
+      </fieldset>
+
+      {% if has_location %}
+        {% include "components/form_field.html" with field=form.max_distance %}
+      {% elif current_user and not current_user.is_organization %}
+        <div class="flex gap-3 rounded-xl bg-lavender p-4 text-sm">
+          <span class="text-primary">{% include "components/icon.html" with name="pin" %}</span>
+          <p class="text-muted"><a href="{% url 'accounts:profile' %}" class="font-semibold text-primary">Add your location</a> to see distances and filter by how far a college is.</p>
+        </div>
+      {% endif %}
+
+      <button form="course-search"
+              class="min-h-[44px] w-full rounded-full bg-ink px-6 font-semibold text-white transition hover:bg-primary">Apply filters</button>
+    </div>
+  </aside>
+
+  {# ---------- Results ---------- #}
+  <section class="mt-6 min-w-0 lg:mt-0" aria-label="Results">
+    <div class="flex flex-wrap items-center justify-between gap-3">
+      <p class="text-muted"><span class="text-lg font-extrabold text-ink">{{ courses|length }}</span> course{{ courses|length|pluralize }} found</p>
+      <div class="flex items-center gap-2">
+        <label for="{{ form.sort.id_for_label }}" class="whitespace-nowrap text-sm font-semibold text-muted">{{ form.sort.label }}</label>
+        <div class="w-48">{{ form.sort }}</div>
+      </div>
+    </div>
+
+    {% if ad %}<div class="mt-5">{% include "components/sponsored_ad.html" %}</div>{% endif %}
+
+    <div class="mt-5 grid gap-5 sm:grid-cols-2">
+      {% for course in courses %}
+        {% include "components/course_card.html" %}
+      {% empty %}
+        <div class="rounded-2xl border-2 border-dashed border-line px-6 py-14 text-center sm:col-span-2">
+          <span class="mx-auto grid h-14 w-14 place-items-center rounded-2xl bg-lavender text-primary">
+            {% include "components/icon.html" with name="search" size="h-6 w-6" %}
+          </span>
+          <p class="mt-4 text-lg font-bold">No courses match your search</p>
+          <p class="mt-1 text-sm text-muted">Try fewer words, a wider tuition range, or clear the filters.</p>
+          {% if request.GET %}
+            <div class="mt-6">
+              {% url 'courses:search' as search_url %}
+              {% include "components/button.html" with url=search_url label="Clear filters" variant="outline" %}
+            </div>
+          {% endif %}
+        </div>
+      {% endfor %}
+    </div>
+  </section>
+</div>
+{% endwith %}
+
+{% include "components/compare_tray.html" %}
+{% endblock %}

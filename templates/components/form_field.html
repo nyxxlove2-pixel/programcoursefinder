@@ -1,0 +1,40 @@
+{% comment %}
+  One form field with its label, help text, and errors. Usage: include "components/form_field.html" with field=form.name
+  Optional: prefix="₱" shows a symbol inside the input.
+  The help text id matches the aria-describedby that Django puts on the input, so screen readers read it too.
+{% endcomment %}
+<div class="space-y-2">
+  {% if field.widget_type == 'checkbox' %}
+    <label class="flex cursor-pointer items-start gap-3 rounded-xl border border-line bg-white p-4 transition hover:border-primary/40 has-[:checked]:border-primary/50 has-[:checked]:bg-lavender/60">
+      <span class="pt-0.5">{{ field }}</span>
+      <span class="font-semibold">{{ field.label }}</span>
+    </label>
+  {% elif field.widget_type == 'radioselect' %}
+    <p class="text-sm font-semibold">{{ field.label }}</p>
+    <div class="grid grid-cols-[repeat(auto-fit,minmax(7rem,1fr))] gap-2">
+      {% for choice in field %}
+        <label class="flex min-h-[44px] cursor-pointer items-center justify-center gap-2.5 whitespace-nowrap rounded-xl border border-line bg-white px-4 py-2.5 font-semibold text-muted transition
+                      hover:border-primary/40 has-[:checked]:border-primary has-[:checked]:bg-lavender has-[:checked]:text-primary has-[:focus-visible]:ring-4 has-[:focus-visible]:ring-primary/15">
+          {{ choice.tag }} {{ choice.choice_label }}
+        </label>
+      {% endfor %}
+    </div>
+  {% else %}
+    <label for="{{ field.id_for_label }}" class="block text-sm font-semibold">{{ field.label }}</label>
+    {% if prefix %}
+      {# A fixed symbol (like ₱) inside the input; the field itself needs left padding, e.g. pl-9 #}
+      <div class="relative">
+        <span class="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 font-semibold text-muted">{{ prefix }}</span>
+        {{ field }}
+      </div>
+    {% else %}
+      {{ field }}
+    {% endif %}
+  {% endif %}
+  {% if field.help_text %}<p id="{{ field.auto_id }}_helptext" class="text-[13px] leading-snug text-muted">{{ field.help_text }}</p>{% endif %}
+  {% for error in field.errors %}
+    <p class="flex items-center gap-1.5 text-sm font-medium text-red-600">
+      {% include "components/icon.html" with name="alert" size="h-4 w-4" %}{{ error }}
+    </p>
+  {% endfor %}
+</div>

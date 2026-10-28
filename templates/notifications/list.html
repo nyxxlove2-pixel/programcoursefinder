@@ -1,0 +1,32 @@
+{% extends base_layout %}
+{% block title %}Notifications · Program Course Finder{% endblock %}
+
+{% block content %}
+<section class="mx-auto max-w-2xl pt-8 lg:pt-10">
+  <p class="text-sm font-semibold text-muted">Inbox</p>
+  <h1 class="mt-1 text-2xl font-extrabold tracking-tight sm:text-3xl">Notifications</h1>
+
+  <ul class="mt-6 divide-y divide-line overflow-hidden rounded-2xl border border-line bg-white shadow-panel">
+    {% for notification in notifications %}
+      <li>
+        <a href="{{ notification.link|default:'#' }}" class="flex min-h-[44px] items-start gap-4 p-5 transition hover:bg-lavender/50">
+          <span class="grid h-10 w-10 shrink-0 place-items-center rounded-xl {% if notification.is_read %}bg-lavender/60 text-muted{% else %}bg-lavender text-primary{% endif %}">
+            {% include "components/icon.html" with name="bell" %}
+          </span>
+          <span class="min-w-0 flex-1">
+            <span class="block {% if notification.is_read %}text-muted{% else %}font-semibold{% endif %}">{{ notification.message }}</span>
+            <span class="mt-1 block text-xs text-muted">{{ notification.created_at|timesince }} ago</span>
+          </span>
+          {% if not notification.is_read %}<span class="mt-2 h-2.5 w-2.5 shrink-0 rounded-full bg-accent" aria-label="Unread"></span>{% endif %}
+        </a>
+      </li>
+    {% empty %}
+      <li class="px-6 py-14 text-center">
+        <span class="mx-auto grid h-12 w-12 place-items-center rounded-2xl bg-lavender text-primary">{% include "components/icon.html" with name="bell" %}</span>
+        <p class="mt-3 font-bold">You're all caught up</p>
+        <p class="mt-1 text-sm text-muted">New reviews, replies, and verification updates show up here.</p>
+      </li>
+    {% endfor %}
+  </ul>
+</section>
+{% endblock %}

@@ -1,0 +1,20 @@
+{% comment %}
+  Like or dislike pill under a review. Clickable when review.can_react is set
+  (see reviews.utils.reviews_for_page); otherwise it only shows the count.
+  Usage: include "components/reaction_button.html" with reaction="like" count=review.likes
+{% endcomment %}
+{% if review.can_react %}
+  <form method="post" action="{% url 'reviews:react' review.pk %}">
+    {% csrf_token %}
+    <input type="hidden" name="reaction" value="{{ reaction }}">
+    <button aria-label="{{ reaction|capfirst }} this review" aria-pressed="{% if review.my_reaction == reaction %}true{% else %}false{% endif %}"
+            class="inline-flex min-h-[44px] items-center gap-1.5 rounded-full px-4 text-sm font-semibold transition
+                   {% if review.my_reaction == reaction %}bg-primary text-white{% else %}bg-lavender text-primary hover:bg-line{% endif %}">
+      {% include "components/icon.html" with name=reaction size="h-4 w-4" %} {{ count }}
+    </button>
+  </form>
+{% else %}
+  <span class="inline-flex min-h-[44px] items-center gap-1.5 px-2 text-sm text-muted" aria-label="{{ count }} {{ reaction }}{{ count|pluralize }}">
+    {% include "components/icon.html" with name=reaction size="h-4 w-4" %} {{ count }}
+  </span>
+{% endif %}

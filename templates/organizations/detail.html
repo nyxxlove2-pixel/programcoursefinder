@@ -1,0 +1,51 @@
+{% extends "base.html" %}
+{% block title %}{{ organization.name }} · Program Course Finder{% endblock %}
+
+{% block content %}
+<div class="grid gap-8 pt-10 sm:pt-14 lg:grid-cols-[1fr_20rem] lg:gap-12">
+  {# ---------- College header ---------- #}
+  <section class="min-w-0">
+    <div class="flex items-center gap-4">
+      {% include "components/monogram.html" with name=organization.name size="h-16 w-16 text-2xl" %}
+      {% include "components/verified_badge.html" %}
+    </div>
+    <h1 class="mt-5 text-balance text-3xl font-extrabold leading-tight tracking-tight sm:text-[2.75rem]">{{ organization.name }}</h1>
+    {% if organization.description %}<p class="mt-4 max-w-2xl text-lg leading-relaxed text-muted">{{ organization.description }}</p>{% endif %}
+
+    <div class="mt-6 flex flex-wrap gap-2">
+      {% if organization.website %}{% include "components/button.html" with url=organization.website label="Website" variant="ghost" icon="globe" %}{% endif %}
+      {% if organization.facebook_url %}{% include "components/button.html" with url=organization.facebook_url label="Facebook" variant="ghost" %}{% endif %}
+      {% if organization.instagram_url %}{% include "components/button.html" with url=organization.instagram_url label="Instagram" variant="ghost" %}{% endif %}
+      {% if organization.tiktok_url %}{% include "components/button.html" with url=organization.tiktok_url label="TikTok" variant="ghost" %}{% endif %}
+      {% if organization.youtube_url %}{% include "components/button.html" with url=organization.youtube_url label="YouTube" variant="ghost" %}{% endif %}
+    </div>
+  </section>
+
+  {# ---------- Contact panel ---------- #}
+  <aside class="self-start rounded-2xl border border-line bg-white shadow-panel">
+    <h2 class="border-b border-line px-5 py-4 text-sm font-bold uppercase tracking-[0.12em] text-muted">Contact</h2>
+    <dl class="divide-y divide-line">
+      {% include "components/fact.html" with icon="pin" label="Address" value=organization.address %}
+      {% include "components/fact.html" with icon="phone" label="Phone" value=organization.phone %}
+      {% include "components/fact.html" with icon="mail" label="Email" value=organization.email %}
+    </dl>
+    <div class="border-t border-line px-3 py-1">{% include "components/report_link.html" with target_type="organization" target_id=organization.pk %}</div>
+  </aside>
+</div>
+
+<section class="mt-20">
+  <div class="flex items-end justify-between gap-4 border-b border-line pb-4">
+    <h2 class="text-2xl font-extrabold tracking-tight sm:text-3xl">Courses <span class="text-primary">offered</span></h2>
+    <p class="text-sm font-semibold text-muted">{{ courses|length }} course{{ courses|length|pluralize }}</p>
+  </div>
+  <div class="mt-6 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+    {% for course in courses %}
+      {% include "components/course_card.html" %}
+    {% empty %}
+      <p class="text-muted">No courses listed yet.</p>
+    {% endfor %}
+  </div>
+</section>
+
+{% include "components/compare_tray.html" %}
+{% endblock %}
