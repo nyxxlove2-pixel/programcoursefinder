@@ -20,5 +20,6 @@ Django project for finding colleges and courses. Read these before building:
 - **Tailwind:** Play CDN in `templates/base.html`, with the design colors in its config.
 - **Template comments:** `{# ... #}` must fit on one line; for longer notes use `{% comment %}...{% endcomment %}`, otherwise the text shows on the page.
 - **Secrets:** `.env` (never commit it).
+- **Deploy (Vercel):** `vercel.json` runs Django through `program_course_finder/wsgi.py`; WhiteNoise serves static files. Keep `templates/base.html` named as it is (Vercel does not need an `index.html`). On Vercel, `DEBUG` is off and `DJANGO_SECRET_KEY` plus the `.env` values must be set as Environment Variables. The database must use Supabase's Session pooler host. Vercel's disk is read-only, so uploaded files (verification documents) need Supabase Storage there.
 
 Run: `.\venv\Scripts\Activate.ps1` then `python manage.py runserver`.

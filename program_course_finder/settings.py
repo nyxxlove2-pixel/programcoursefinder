@@ -25,13 +25,24 @@ load_dotenv(BASE_DIR / '.env')
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/6.1/howto/deployment/checklist/
 
-# SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-owvk@fiz)66^74zzg=*0v3#h^ivg!i(d5*)xt8gk!2)r6+27fv'
+# Vercel sets VERCEL=1 on its servers, so we know when the site is live
+ON_VERCEL = os.getenv('VERCEL') == '1'
 
-# SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+# Live: the secret key must come from Vercel's environment variables.
+# On your own computer a throwaway key is fine.
+SECRET_KEY = os.getenv('DJANGO_SECRET_KEY') or 'django-insecure-local-development-only'
+if ON_VERCEL and not os.getenv('DJANGO_SECRET_KEY'):
+    raise RuntimeError('Set DJANGO_SECRET_KEY in Vercel > Settings > Environment Variables')
 
-ALLOWED_HOSTS = []
+# Error pages with code details only on your own computer, never on the live site
+DEBUG = not ON_VERCEL
+
+ALLOWED_HOSTS = ['localhost', '127.0.0.1', '.vercel.app']
+
+# Vercel serves the site over https and tells Django so with this header.
+# Without these two lines every form on the live site fails the CSRF check.
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+CSRF_TRUSTED_ORIGINS = ['https://*.vercel.app']
 
 
 # Application definition
@@ -57,6 +68,8 @@ INSTALLED_APPS = [
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
+    # Serves CSS and images (ours and Django admin's) on Vercel, where Django itself does not
+    'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -140,6 +153,8 @@ USE_TZ = True
 STATIC_URL = 'static/'
 # Our own images (like the home page photo) live in the static/ folder
 STATICFILES_DIRS = [BASE_DIR / 'static']
+# Let WhiteNoise find static files where they live, so no collectstatic step is needed
+WHITENOISE_USE_FINDERS = True
 
 # Uploaded files (verification documents). Stored locally for now;
 # can move to Supabase Storage later.

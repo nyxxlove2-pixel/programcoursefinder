@@ -1,0 +1,8 @@
+{
+  "builds": [
+    { "src": "program_course_finder/wsgi.py", "use": "@vercel/python" }
+  ],
+  "routes": [
+    { "src": "/(.*)", "dest": "program_course_finder/wsgi.py" }
+  ]
+}
