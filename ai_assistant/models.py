@@ -1,6 +1,8 @@
 from django.db import models
+from django.urls import reverse
 from django.utils import timezone
 
+from accounts.models import User
 from courses.models import Course
 
 
@@ -26,3 +28,42 @@ class ReviewSummary(models.Model):
         managed = False
         db_table = 'review_summaries'
         unique_together = ('course', 'period_type', 'period_start')
+
+
+class Conversation(models.Model):
+    """One chat with the AI assistant, listed in the chat sidebar so the user can reopen it."""
+
+    TITLE_LENGTH = 60  # the first question, cut short, names the chat
+
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='ai_conversations')
+    title = models.TextField()
+    created_at = models.DateTimeField(default=timezone.now)
+    # Moves to now on every new question, so the newest chats come first
+    updated_at = models.DateTimeField(default=timezone.now)
+
+    class Meta:
+        managed = False
+        db_table = 'ai_conversations'
+        ordering = ['-updated_at']
+
+    def __str__(self):
+        return self.title
+
+    def get_absolute_url(self):
+        return reverse('ai_assistant:conversation', args=[self.pk])
+
+
+class ChatMessage(models.Model):
+    """One question and the AI's answer inside a conversation."""
+
+    conversation = models.ForeignKey(Conversation, on_delete=models.CASCADE, related_name='messages')
+    question = models.TextField()
+    answer = models.TextField()
+    # The cited courses as [{"id", "name", "college"}], saved so old answers keep their links
+    sources = models.JSONField(default=list)
+    created_at = models.DateTimeField(default=timezone.now)
+
+    class Meta:
+        managed = False
+        db_table = 'ai_messages'
+        ordering = ['created_at']

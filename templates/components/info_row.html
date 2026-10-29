@@ -1,5 +1,5 @@
 {# Label + value line. Usage: include "components/info_row.html" with label="..." value=... #}
 <div class="flex justify-between gap-4 border-b border-line py-3 text-sm last:border-0">
-  <dt class="text-muted">{{ label }}</dt>
-  <dd class="text-right font-semibold">{{ value|default:"—" }}</dd>
+  <dt class="text-slate-500">{{ label }}</dt>
+  <dd class="text-right font-medium text-ink">{{ value|default:"—" }}</dd>
 </div>

@@ -1,0 +1,7 @@
+{# One line with a round check mark in front; use inside a <ul>. Usage: include "components/check_item.html" with text="..." #}
+<li class="flex gap-3">
+  <span class="mt-0.5 grid h-6 w-6 shrink-0 place-items-center rounded-full bg-lavender text-primary">
+    {% include "components/icon.html" with name="check" size="h-3.5 w-3.5" %}
+  </span>
+  <span class="leading-relaxed">{{ text }}</span>
+</li>

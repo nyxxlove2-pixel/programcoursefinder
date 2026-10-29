@@ -1,8 +1,8 @@
-{# Organization sidebar item. Usage: include "components/sidebar_link.html" with url=... label=... icon="overview" count=3 (count optional) #}
+{# Item in the dark organization sidebar. Usage: include "components/sidebar_link.html" with url=... label=... icon="overview" count=3 (count optional) #}
 <a href="{{ url }}" {% if request.path == url %}aria-current="page"{% endif %}
-   class="flex min-h-[44px] items-center gap-3 rounded-xl px-3 text-[15px] font-semibold transition
-          {% if request.path == url %}bg-lavender text-primary{% else %}text-muted hover:bg-lavender/60 hover:text-ink{% endif %}">
-  {% include "components/icon.html" with name=icon %}
+   class="flex min-h-[40px] items-center gap-3 rounded-lg px-3 text-sm font-medium transition
+          {% if request.path == url %}bg-white/10 text-white{% else %}text-slate-400 hover:bg-white/5 hover:text-white{% endif %}">
+  <span class="{% if request.path == url %}text-indigo-400{% endif %}">{% include "components/icon.html" with name=icon size="h-[18px] w-[18px]" %}</span>
   {{ label }}
-  {% if count %}<span class="ml-auto rounded-full bg-accent px-2 py-0.5 text-xs font-bold text-white">{{ count }}</span>{% endif %}
+  {% if count %}<span class="ml-auto rounded-md bg-primary px-1.5 py-0.5 text-xs font-semibold text-white">{{ count }}</span>{% endif %}
 </a>

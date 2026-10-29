@@ -1,0 +1,27 @@
+{% comment %}
+  One settings field as a row: label and help on the left, the input on the right (stacked on phones).
+  Used by layouts/settings_page.html. Usage: include "components/setting_row.html" with field=form.email
+{% endcomment %}
+<div class="grid gap-x-10 gap-y-2 px-5 py-5 sm:px-6 md:grid-cols-[13rem_1fr]">
+  {% if field.widget_type == 'checkbox' %}
+    <span class="hidden md:block"></span>
+    <div>
+      <label class="flex cursor-pointer items-start gap-3">
+        <span class="pt-0.5">{{ field }}</span>
+        <span class="text-sm font-medium">{{ field.label }}</span>
+      </label>
+      {% if field.help_text %}<p id="{{ field.auto_id }}_helptext" class="mt-1 pl-7 text-xs text-slate-500">{{ field.help_text }}</p>{% endif %}
+      {% include "components/field_errors.html" %}
+    </div>
+  {% else %}
+    <div>
+      <label for="{{ field.id_for_label }}" class="text-sm font-medium text-ink">{{ field.label }}</label>
+      {% if field.help_text %}<p id="{{ field.auto_id }}_helptext" class="mt-1 text-xs leading-snug text-slate-500">{{ field.help_text }}</p>{% endif %}
+    </div>
+    <div class="max-w-lg space-y-2">
+      {{ field }}
+      {% include "components/field_errors.html" %}
+      {% if field.name == form.map_after %}{% include "components/location_picker.html" %}{% endif %}
+    </div>
+  {% endif %}
+</div>

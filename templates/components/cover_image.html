@@ -1,0 +1,4 @@
+{# Wide cover image, or an indigo-to-slate gradient when there is none. Usage: include "components/cover_image.html" with url=profile.cover_url size="h-40 sm:h-56" #}
+<div class="{{ size|default:'h-40 sm:h-56' }} bg-gradient-to-br from-primary via-indigo-500 to-slate-900">
+  {% if url %}<img src="{{ url }}" alt="" class="h-full w-full object-cover">{% endif %}
+</div>

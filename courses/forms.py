@@ -21,7 +21,8 @@ class CourseForm(StyledFormMixin, forms.ModelForm):
             'description': 'What students learn, how long it takes, and any entry requirements.',
             'term_tuition': 'Optional. Leave empty if you only charge per year.',
         }
-        widgets = {'description': forms.Textarea(attrs={'rows': 5})}
+        # name is a TextField (big box by default); a course name only needs one line
+        widgets = {'name': forms.TextInput, 'description': forms.Textarea(attrs={'rows': 5})}
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -63,8 +64,8 @@ class SearchForm(StyledFormMixin, forms.Form):
         for field in self.fields.values():
             field.widget.attrs['form'] = 'course-search'
         self.fields['query'].widget.attrs['placeholder'] = 'Search a course or college, e.g. Nursing'
-        # A bigger pill for the main search bar, with room for the search icon
-        self.fields['query'].widget.attrs['class'] += ' rounded-full py-4 pl-12 text-base'
+        # A taller main search bar, with room for the search icon
+        self.fields['query'].widget.attrs['class'] += ' min-h-[48px] pl-11'
         # Re-run the search as soon as a new sort order is picked
         self.fields['sort'].widget.attrs['onchange'] = 'this.form.submit()'
 

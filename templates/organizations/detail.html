@@ -2,50 +2,74 @@
 {% block title %}{{ organization.name }} · Program Course Finder{% endblock %}
 
 {% block content %}
-<div class="grid gap-8 pt-10 sm:pt-14 lg:grid-cols-[1fr_20rem] lg:gap-12">
-  {# ---------- College header ---------- #}
-  <section class="min-w-0">
-    <div class="flex items-center gap-4">
-      {% include "components/monogram.html" with name=organization.name size="h-16 w-16 text-2xl" %}
+{# ---------- Banner: cover photo (or gradient) with a dark fade, and the logo badge overlapping it ---------- #}
+<section class="mt-6 overflow-hidden rounded-2xl border border-line bg-white shadow-panel sm:mt-8">
+  <div class="relative">
+    {% include "components/cover_image.html" with url=organization.cover_url size="h-36 sm:h-56" %}
+    <div class="absolute inset-0 bg-gradient-to-t from-slate-900/70 via-slate-900/10 to-transparent" aria-hidden="true"></div>
+  </div>
+
+  <div class="px-5 pb-6 sm:px-8 sm:pb-8">
+    <div class="-mt-10 flex items-end justify-between gap-4 sm:-mt-12">
+      <span class="relative rounded-xl bg-white p-1.5 shadow-sm ring-1 ring-line">
+        {% include "components/monogram.html" with name=organization.name logo=organization.logo_url size="h-16 w-16 text-2xl sm:h-20 sm:w-20 sm:text-3xl" %}
+      </span>
       {% include "components/verified_badge.html" %}
     </div>
-    <h1 class="mt-5 text-balance text-3xl font-extrabold leading-tight tracking-tight sm:text-[2.75rem]">{{ organization.name }}</h1>
-    {% if organization.description %}<p class="mt-4 max-w-2xl text-lg leading-relaxed text-muted">{{ organization.description }}</p>{% endif %}
+    <h1 class="mt-4 text-balance text-2xl font-bold leading-tight tracking-tight text-ink sm:text-4xl">{{ organization.name }}</h1>
+    {% if organization.address %}
+      <a href="{{ organization.map_url }}" target="_blank" rel="noopener" title="Open in Google Maps"
+         class="mt-2 inline-flex items-start gap-1.5 text-sm text-slate-500 hover:text-primary hover:underline">
+        <span class="mt-0.5 shrink-0">{% include "components/icon.html" with name="pin" size="h-4 w-4" %}</span>{{ organization.address }}
+      </a>
+    {% endif %}
+    {% if organization.description %}<p class="mt-4 max-w-3xl leading-relaxed text-slate-600">{{ organization.description }}</p>{% endif %}
 
     <div class="mt-6 flex flex-wrap gap-2">
+      {% if organization.map_url %}{% include "components/button.html" with url=organization.map_url label="View on map" icon="pin" new_tab=True %}{% endif %}
       {% if organization.website %}{% include "components/button.html" with url=organization.website label="Website" variant="ghost" icon="globe" %}{% endif %}
       {% if organization.facebook_url %}{% include "components/button.html" with url=organization.facebook_url label="Facebook" variant="ghost" %}{% endif %}
       {% if organization.instagram_url %}{% include "components/button.html" with url=organization.instagram_url label="Instagram" variant="ghost" %}{% endif %}
       {% if organization.tiktok_url %}{% include "components/button.html" with url=organization.tiktok_url label="TikTok" variant="ghost" %}{% endif %}
       {% if organization.youtube_url %}{% include "components/button.html" with url=organization.youtube_url label="YouTube" variant="ghost" %}{% endif %}
     </div>
+  </div>
+</section>
+
+<div class="mt-8 grid gap-6 lg:grid-cols-[1fr_18rem] lg:gap-8">
+  {# ---------- Courses offered ---------- #}
+  <section class="order-2 min-w-0 lg:order-1">
+    <div class="flex items-end justify-between gap-4 border-b border-line pb-4">
+      <div>
+        <p class="text-[10px] font-bold uppercase tracking-wider text-slate-400">Programs</p>
+        <h2 class="mt-1 text-xl font-bold tracking-tight text-ink">Courses offered</h2>
+      </div>
+      <p class="text-sm font-medium text-slate-500">{{ courses|length }} course{{ courses|length|pluralize }}</p>
+    </div>
+    <div class="mt-5 grid gap-4 sm:grid-cols-2">
+      {% for course in courses %}
+        {% include "components/course_card.html" %}
+      {% empty %}
+        <div class="rounded-xl border border-dashed border-slate-300 bg-white px-6 py-12 text-center sm:col-span-2">
+          <span class="mx-auto grid h-12 w-12 place-items-center rounded-lg bg-slate-100 text-slate-500">{% include "components/icon.html" with name="course" %}</span>
+          <p class="mt-3 font-semibold text-ink">No courses listed yet</p>
+          <p class="mt-1 text-sm text-slate-500">Check back soon. This college has not added its programs.</p>
+        </div>
+      {% endfor %}
+    </div>
   </section>
 
-  {# ---------- Contact panel ---------- #}
-  <aside class="self-start rounded-2xl border border-line bg-white shadow-panel">
-    <h2 class="border-b border-line px-5 py-4 text-sm font-bold uppercase tracking-[0.12em] text-muted">Contact</h2>
+  {# ---------- Campus info ---------- #}
+  <aside class="order-1 self-start rounded-xl border border-line bg-white shadow-panel lg:sticky lg:top-24 lg:order-2">
+    <h2 class="border-b border-line px-5 py-4 text-sm font-semibold text-ink">Campus info</h2>
     <dl class="divide-y divide-line">
-      {% include "components/fact.html" with icon="pin" label="Address" value=organization.address %}
+      {% include "components/fact.html" with icon="pin" label="Address" value=organization.address url=organization.map_url %}
       {% include "components/fact.html" with icon="phone" label="Phone" value=organization.phone %}
       {% include "components/fact.html" with icon="mail" label="Email" value=organization.email %}
     </dl>
-    <div class="border-t border-line px-3 py-1">{% include "components/report_link.html" with target_type="organization" target_id=organization.pk %}</div>
+    <div class="rounded-b-xl border-t border-line bg-slate-50 px-3 py-1">{% include "components/report_link.html" with target_type="organization" target_id=organization.pk %}</div>
   </aside>
 </div>
-
-<section class="mt-20">
-  <div class="flex items-end justify-between gap-4 border-b border-line pb-4">
-    <h2 class="text-2xl font-extrabold tracking-tight sm:text-3xl">Courses <span class="text-primary">offered</span></h2>
-    <p class="text-sm font-semibold text-muted">{{ courses|length }} course{{ courses|length|pluralize }}</p>
-  </div>
-  <div class="mt-6 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-    {% for course in courses %}
-      {% include "components/course_card.html" %}
-    {% empty %}
-      <p class="text-muted">No courses listed yet.</p>
-    {% endfor %}
-  </div>
-</section>
 
 {% include "components/compare_tray.html" %}
 {% endblock %}

@@ -3,26 +3,31 @@
 {% block title %}{{ course.name }} · Program Course Finder{% endblock %}
 
 {% block content %}
-<nav class="flex flex-wrap items-center gap-2 pt-8 text-sm text-muted" aria-label="Breadcrumb">
-  <a href="{% url 'courses:search' %}" class="font-semibold hover:text-primary">Courses</a>
-  <span aria-hidden="true">/</span>
-  <a href="{% url 'organizations:detail' course.organization.pk %}" class="font-semibold hover:text-primary">{{ course.organization.name }}</a>
+{% url 'organizations:detail' course.organization.pk as college_url %}
+<nav class="flex min-w-0 items-center gap-2 pt-8 text-sm text-slate-500" aria-label="Breadcrumb">
+  <a href="{% url 'courses:search' %}" class="shrink-0 font-medium hover:text-ink">Courses</a>
+  <span class="text-slate-300" aria-hidden="true">/</span>
+  <a href="{{ college_url }}" class="truncate font-medium hover:text-ink">{{ course.organization.name }}</a>
+  <span class="text-slate-300" aria-hidden="true">/</span>
+  <span class="truncate font-medium text-ink" aria-current="page">{{ course.name }}</span>
 </nav>
 
-<div class="mt-6 grid gap-8 lg:grid-cols-[1fr_20rem] lg:gap-12">
+<div class="mt-6 grid gap-6 lg:grid-cols-[1fr_20rem] lg:gap-8">
   {# ---------- Course info ---------- #}
-  <section class="min-w-0">
+  <section class="min-w-0 rounded-xl border border-line bg-white p-6 shadow-panel sm:p-8">
     {% include "components/verified_badge.html" %}
-    <h1 class="mt-4 text-balance text-3xl font-extrabold leading-tight tracking-tight sm:text-[2.75rem]">{{ course.name }}</h1>
-    <a href="{% url 'organizations:detail' course.organization.pk %}" class="mt-4 inline-flex items-center gap-3 font-semibold hover:text-primary">
-      {% include "components/monogram.html" with name=course.organization.name size="h-9 w-9 text-sm" %}
-      {{ course.organization.name }}
-    </a>
-    <div class="mt-4">{% include "components/stars.html" with rating=course.average_rating count=course.review_count %}</div>
-    {% if course.description %}<p class="mt-6 max-w-2xl text-lg leading-relaxed text-muted">{{ course.description }}</p>{% endif %}
+    <h1 class="mt-4 text-balance text-3xl font-bold leading-tight tracking-tight text-ink sm:text-4xl">{{ course.name }}</h1>
+    <div class="mt-4 flex flex-wrap items-center gap-x-5 gap-y-3">
+      <a href="{{ college_url }}" class="inline-flex items-center gap-2.5 text-sm font-semibold text-ink hover:text-primary">
+        {% include "components/monogram.html" with name=course.organization.name logo=course.organization.logo_url size="h-8 w-8 text-sm" %}
+        {{ course.organization.name }}
+      </a>
+      {% include "components/stars.html" with rating=course.average_rating count=course.review_count %}
+    </div>
+    {% if course.description %}<p class="mt-6 max-w-2xl whitespace-pre-line leading-relaxed text-slate-600">{{ course.description }}</p>{% endif %}
 
     {# Hairline grid: the 1px gap shows the line color between the white cells #}
-    <dl class="mt-8 grid gap-px overflow-hidden rounded-2xl border border-line bg-line sm:grid-cols-2">
+    <dl class="mt-8 grid gap-px overflow-hidden rounded-lg border border-line bg-line sm:grid-cols-2">
       {% include "components/fact.html" with icon="money" label="Yearly tuition" value=course.yearly_tuition|peso %}
       {% include "components/fact.html" with icon="money" label="Per-term tuition" value=course.term_tuition|peso %}
       {% include "components/fact.html" with icon="pin" label="Distance from you" value=course.distance|km %}
@@ -30,48 +35,55 @@
     </dl>
   </section>
 
-  {# ---------- Price card ---------- #}
-  <aside class="rounded-2xl border border-line bg-white p-6 shadow-soft lg:sticky lg:top-24 lg:self-start">
-    <p class="text-xs font-bold uppercase tracking-wider text-muted">Yearly tuition</p>
-    <p class="mt-1 text-3xl font-extrabold tracking-tight text-primary">{{ course.yearly_tuition|peso }}</p>
-    {% if course.term_tuition %}<p class="mt-1 text-sm text-muted">{{ course.term_tuition|peso }} per term</p>{% endif %}
-    <div class="mt-6 grid gap-2">
-      {% include "components/compare_button.html" with full=True %}
-      {% url 'organizations:detail' course.organization.pk as college_url %}
-      {% include "components/button.html" with url=college_url label="View college" variant="ghost" full=True %}
+  {# ---------- Sticky tuition summary ---------- #}
+  <aside class="self-start rounded-xl border border-line bg-white shadow-panel lg:sticky lg:top-24">
+    <div class="p-6">
+      <p class="text-[10px] font-bold uppercase tracking-wider text-slate-400">Yearly tuition</p>
+      <p class="mt-1 text-3xl font-bold tracking-tight text-ink">{{ course.yearly_tuition|peso }}</p>
+      {% if course.term_tuition %}<p class="mt-1 text-sm text-slate-500">{{ course.term_tuition|peso }} per term</p>{% endif %}
+      <div class="mt-6 grid gap-2">
+        {% include "components/compare_button.html" with full=True %}
+        {% include "components/button.html" with url=college_url label="View college" variant="ghost" full=True %}
+      </div>
     </div>
-    <div class="mt-4 border-t border-line pt-3 text-center">
+    <div class="rounded-b-xl border-t border-line bg-slate-50 px-6 py-2 text-center">
       {% include "components/report_link.html" with target_type="course" target_id=course.pk %}
     </div>
   </aside>
 </div>
 
 {# ---------- Reviews ---------- #}
-<section id="reviews" class="mt-20 scroll-mt-24">
-  <h2 class="text-2xl font-extrabold tracking-tight sm:text-3xl">Student <span class="text-primary">reviews</span></h2>
+<section id="reviews" class="mt-12 scroll-mt-24 sm:mt-16">
+  <div class="flex flex-wrap items-end justify-between gap-3 border-b border-line pb-4">
+    <div>
+      <p class="text-[10px] font-bold uppercase tracking-wider text-slate-400">Feedback</p>
+      <h2 class="mt-1 text-2xl font-bold tracking-tight text-ink">Student reviews</h2>
+    </div>
+    {% include "components/stars.html" with rating=course.average_rating count=course.review_count %}
+  </div>
 
-  <div class="mt-6 grid gap-6 lg:grid-cols-[1fr_20rem] lg:items-start lg:gap-12">
+  <div class="mt-6 grid gap-6 lg:grid-cols-[1fr_20rem] lg:items-start lg:gap-8">
     <div class="order-2 lg:order-1">
       {% if reviews %}
-        <div class="divide-y divide-line overflow-hidden rounded-2xl border border-line bg-white shadow-panel">
+        <div class="divide-y divide-line overflow-hidden rounded-xl border border-line bg-white shadow-panel">
           {% for review in reviews %}
             {% include "components/review_card.html" %}
           {% endfor %}
         </div>
       {% else %}
-        <div class="rounded-2xl border-2 border-dashed border-line px-6 py-12 text-center">
-          <span class="mx-auto grid h-12 w-12 place-items-center rounded-2xl bg-lavender text-primary">{% include "components/icon.html" with name="chat" %}</span>
-          <p class="mt-3 font-bold">No reviews yet</p>
-          <p class="mt-1 text-sm text-muted">Not enough reviews yet to say how students feel about this course.</p>
+        <div class="rounded-xl border border-dashed border-slate-300 bg-white px-6 py-12 text-center">
+          <span class="mx-auto grid h-12 w-12 place-items-center rounded-lg bg-slate-100 text-slate-500">{% include "components/icon.html" with name="chat" %}</span>
+          <p class="mt-3 font-semibold text-ink">No reviews yet</p>
+          <p class="mt-1 text-sm text-slate-500">Not enough reviews yet to say how students feel about this course.</p>
         </div>
       {% endif %}
     </div>
 
     {# Review form: Users write or edit their review; visitors are asked to log in #}
-    <aside class="order-1 rounded-2xl border border-line bg-white p-6 shadow-panel lg:sticky lg:top-24 lg:order-2">
+    <aside class="order-1 rounded-xl border border-line bg-white p-6 shadow-panel lg:sticky lg:top-24 lg:order-2">
       {% if review_form %}
-        <h3 class="text-lg font-bold">{% if review_form.instance.pk %}Edit your review{% else %}Write a review{% endif %}</h3>
-        <p class="mt-1 text-sm text-muted">One review per course. You can update it any time.</p>
+        <h3 class="font-semibold text-ink">{% if review_form.instance.pk %}Edit your review{% else %}Write a review{% endif %}</h3>
+        <p class="mt-1 text-sm text-slate-500">One review per course. You can update it any time.</p>
         <form method="post" action="{% url 'reviews:save' course.pk %}" class="mt-5 space-y-5">
           {% csrf_token %}
           {% include "components/form_fields.html" with form=review_form %}
@@ -82,14 +94,14 @@
           {% endif %}
         </form>
       {% elif current_user.is_organization %}
-        <h3 class="text-lg font-bold">Reviews are from students</h3>
-        <p class="mt-1 text-sm text-muted">College accounts can reply to reviews of their own courses from the dashboard.</p>
+        <h3 class="font-semibold text-ink">Reviews are from students</h3>
+        <p class="mt-1 text-sm text-slate-500">College accounts can reply to reviews of their own courses from the dashboard.</p>
       {% else %}
-        <h3 class="text-lg font-bold">Studied here?</h3>
-        <p class="mt-1 text-sm text-muted">Log in to rate this course and help others decide.</p>
+        <h3 class="font-semibold text-ink">Studied here?</h3>
+        <p class="mt-1 text-sm text-slate-500">Log in to rate this course and help others decide.</p>
         <div class="mt-5">
           {% url 'accounts:login' as login_url %}
-          {% include "components/button.html" with url=login_url label="Log in to review" full=True %}
+          {% include "components/button.html" with url=login_url label="Log in to review" variant="dark" full=True %}
         </div>
       {% endif %}
     </aside>

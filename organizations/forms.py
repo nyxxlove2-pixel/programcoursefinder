@@ -9,6 +9,9 @@ ALLOWED_EXTENSIONS = ('.pdf', '.jpg', '.jpeg', '.png')
 
 
 class OrganizationForm(StyledFormMixin, forms.ModelForm):
+    # The map under this field fills the hidden latitude and longitude (components/location_picker.html)
+    map_after = 'address'
+
     class Meta:
         model = Organization
         fields = [
@@ -17,8 +20,11 @@ class OrganizationForm(StyledFormMixin, forms.ModelForm):
             'facebook_url', 'instagram_url', 'tiktok_url', 'youtube_url',
         ]
         labels = {'name': 'College / university name', 'email': 'Official email'}
-        help_texts = {
-            'latitude': 'Tip: right-click your campus on Google Maps to copy the numbers.',
+        help_texts = {'address': 'Search for your campus or click the map to mark it.'}
+        # Our text columns are TextFields, which show as big boxes; short values get a one-line input
+        widgets = {
+            'name': forms.TextInput, 'phone': forms.TextInput, 'address': forms.TextInput,
+            'latitude': forms.HiddenInput, 'longitude': forms.HiddenInput,
         }
 
 

@@ -14,7 +14,7 @@
     {# ---------- College header ---------- #}
     <section>
       <div class="flex items-center gap-4">
-        {% include "components/monogram.html" with name=organization.name size="h-14 w-14 text-xl" %}
+        {% include "components/monogram.html" with name=organization.name logo=organization.logo_url size="h-14 w-14 text-xl" %}
         <div class="min-w-0">
           <h1 class="text-2xl font-extrabold tracking-tight sm:text-3xl">{{ organization.name }}</h1>
           <div class="mt-1.5 flex flex-wrap items-center gap-3 text-sm text-muted">
@@ -41,7 +41,7 @@
         <div class="sm:col-span-2">{% include "components/fact.html" with icon="pin" label="Address" value=organization.address %}</div>
       </dl>
       <div class="flex flex-wrap gap-2 border-t border-line px-5 py-4 sm:px-6">
-        {% if organization.map_url %}{% include "components/button.html" with url=organization.map_url label="Map pin" variant="ghost" icon="pin" %}{% endif %}
+        {% if organization.map_url %}{% include "components/button.html" with url=organization.map_url label="Open map" variant="ghost" icon="pin" new_tab=True %}{% endif %}
         {% if organization.website %}{% include "components/button.html" with url=organization.website label="Website" variant="ghost" icon="globe" %}{% endif %}
         {% if organization.facebook_url %}{% include "components/button.html" with url=organization.facebook_url label="Facebook" variant="ghost" %}{% endif %}
         {% if organization.instagram_url %}{% include "components/button.html" with url=organization.instagram_url label="Instagram" variant="ghost" %}{% endif %}

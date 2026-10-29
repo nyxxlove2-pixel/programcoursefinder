@@ -42,7 +42,7 @@
         <a href="{% url 'superadmin:review' organization.pk %}"
            class="flex flex-col gap-3 px-5 py-4 transition hover:bg-lavender/40 sm:flex-row sm:items-center sm:justify-between sm:px-6">
           <div class="flex min-w-0 items-center gap-4">
-            {% include "components/monogram.html" with name=organization.name %}
+            {% include "components/monogram.html" with name=organization.name logo=organization.logo_url %}
             <div class="min-w-0">
               <p class="truncate font-semibold">{{ organization.name }}</p>
               <p class="truncate text-sm text-muted">{{ organization.owner.full_name }} · {{ organization.owner.email }}</p>

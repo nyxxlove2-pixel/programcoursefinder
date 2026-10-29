@@ -1,8 +1,21 @@
-{# One key fact in a fact grid (icon, small label, bold value). Usage: include "components/fact.html" with icon="money" label="..." value=... #}
+{% comment %}
+  One key fact in a fact grid (icon, small label, bold value).
+  Usage: include "components/fact.html" with icon="money" label="..." value=...
+  Add url=... to make the value a link that opens in a new tab (for example a map).
+{% endcomment %}
 <div class="flex items-start gap-3 bg-white p-4 sm:p-5">
-  <span class="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-lavender text-primary">{% include "components/icon.html" with name=icon %}</span>
+  <span class="grid h-10 w-10 shrink-0 place-items-center rounded-lg bg-lavender text-primary">{% include "components/icon.html" with name=icon size="h-[18px] w-[18px]" %}</span>
   <div class="min-w-0">
-    <dt class="text-[13px] font-semibold text-muted">{{ label }}</dt>
-    <dd class="mt-0.5 break-words font-bold">{{ value|default:"—" }}</dd>
+    <dt class="text-[10px] font-bold uppercase tracking-wider text-slate-400">{{ label }}</dt>
+    <dd class="mt-1 break-words text-sm font-semibold text-ink">
+      {% if url and value %}
+        <a href="{{ url }}" target="_blank" rel="noopener" class="group hover:text-primary">
+          {{ value }}
+          <span class="ml-0.5 inline-block align-[-2px] text-slate-400 group-hover:text-primary">{% include "components/icon.html" with name="external" size="h-3.5 w-3.5" %}</span>
+        </a>
+      {% else %}
+        {{ value|default:"—" }}
+      {% endif %}
+    </dd>
   </div>
 </div>

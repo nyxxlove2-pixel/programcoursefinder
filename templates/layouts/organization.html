@@ -4,7 +4,7 @@
   and a slide-in drawer (opened from the top bar) on phones. Child pages fill the content block.
 {% endcomment %}
 
-{% block body_class %}bg-lavender/50{% endblock %}
+{% block body_class %}bg-slate-50{% endblock %}
 
 {% block body %}
 {% url 'organizations:dashboard' as dashboard_url %}
@@ -18,19 +18,20 @@
 {% url 'ai_assistant:summaries' as summaries_url %}
 {% url 'courses:bulk_upload' as upload_courses_url %}
 {% url 'ads:list' as ads_url %}
+{% url 'accounts:settings_account' as settings_url %}
 
 {# On phones this is a dark overlay; tapping outside the drawer closes it #}
-<div id="org-menu" class="fixed inset-0 z-50 hidden bg-ink/40 lg:right-auto lg:block lg:bg-transparent"
+<div id="org-menu" class="fixed inset-0 z-50 hidden bg-slate-900/50 lg:right-auto lg:block lg:bg-transparent"
      onclick="if (event.target === this) this.classList.add('hidden')">
-  <aside class="flex h-full w-72 flex-col border-r border-line bg-white shadow-2xl lg:shadow-none">
-    <div class="flex h-16 shrink-0 items-center justify-between gap-2 border-b border-line px-5">
-      {% include "components/logo.html" with compact=True %}
+  <aside class="flex h-full w-64 flex-col border-r border-slate-800 bg-slate-900 shadow-2xl lg:shadow-none">
+    <div class="flex h-16 shrink-0 items-center justify-between gap-2 border-b border-slate-800 px-5">
+      {% include "components/logo.html" with compact=True dark=True %}
       {% include "components/menu_button.html" with target="org-menu" hide_from="lg" icon="close" label="Close menu" %}
     </div>
 
-    <nav class="flex-1 space-y-7 overflow-y-auto px-3 py-6" aria-label="Organization menu">
+    <nav class="flex-1 space-y-6 overflow-y-auto px-3 py-5" aria-label="Organization menu">
       <div>
-        <p class="px-3 text-[11px] font-bold uppercase tracking-[0.12em] text-muted/80">Manage</p>
+        <p class="px-3 text-[10px] font-bold uppercase tracking-wider text-slate-500">Manage</p>
         <div class="mt-2 space-y-1">
           {% include "components/sidebar_link.html" with url=dashboard_url label="Overview" icon="overview" %}
           {% include "components/sidebar_link.html" with url=add_course_url label="Add course" icon="plus" %}
@@ -40,7 +41,7 @@
         </div>
       </div>
       <div>
-        <p class="px-3 text-[11px] font-bold uppercase tracking-[0.12em] text-muted/80">Insights</p>
+        <p class="px-3 text-[10px] font-bold uppercase tracking-wider text-slate-500">Insights</p>
         <div class="mt-2 space-y-1">
           {% include "components/sidebar_link.html" with url=analytics_url label="Analytics" icon="chart" %}
           {% include "components/sidebar_link.html" with url=summaries_url label="AI summaries" icon="sparkle" %}
@@ -48,25 +49,26 @@
         </div>
       </div>
       <div>
-        <p class="px-3 text-[11px] font-bold uppercase tracking-[0.12em] text-muted/80">College</p>
+        <p class="px-3 text-[10px] font-bold uppercase tracking-wider text-slate-500">College</p>
         <div class="mt-2 space-y-1">
           {% include "components/sidebar_link.html" with url=profile_url label="College profile" icon="college" %}
           {% include "components/sidebar_link.html" with url=upload_url label="Documents" icon="document" %}
           {% include "components/sidebar_link.html" with url=public_site_url label="Public site" icon="external" %}
+          {% include "components/sidebar_link.html" with url=settings_url label="Settings" icon="settings" %}
         </div>
       </div>
     </nav>
 
-    <div class="flex items-center gap-3 border-t border-line p-4">
-      {% include "components/avatar.html" with name=current_user.full_name size="h-10 w-10" %}
+    <div class="flex items-center gap-3 border-t border-slate-800 p-4">
+      {% include "components/avatar.html" with name=current_user.full_name photo=current_user.avatar_url size="h-10 w-10" %}
       <div class="min-w-0 flex-1">
-        <p class="truncate text-sm font-bold">{{ current_user.full_name }}</p>
-        <p class="truncate text-xs text-muted">Organization account</p>
+        <p class="truncate text-sm font-semibold text-white">{{ current_user.full_name }}</p>
+        <p class="truncate text-xs text-slate-400">Organization account</p>
       </div>
       <form method="post" action="{% url 'accounts:logout' %}">
         {% csrf_token %}
         <button aria-label="Log out" title="Log out"
-                class="grid h-11 w-11 place-items-center rounded-full text-muted hover:bg-red-50 hover:text-red-600">
+                class="grid h-10 w-10 place-items-center rounded-lg text-slate-400 hover:bg-white/10 hover:text-red-400">
           {% include "components/icon.html" with name="logout" %}
         </button>
       </form>
@@ -74,7 +76,7 @@
   </aside>
 </div>
 
-<div class="lg:pl-72">
+<div class="lg:pl-64">
   <header class="sticky top-0 z-30 flex h-16 items-center gap-3 border-b border-line bg-white/80 px-4 backdrop-blur-md sm:px-6 lg:px-10">
     {% include "components/menu_button.html" with target="org-menu" hide_from="lg" %}
     <div class="min-w-0 flex-1">
@@ -82,7 +84,7 @@
       <p class="hidden truncate text-sm text-muted lg:block">Signed in as <strong class="text-ink">{{ current_user.full_name }}</strong></p>
     </div>
     <a href="{{ notifications_url }}" aria-label="Notifications ({{ unread_notifications }} unread)"
-       class="relative grid h-11 w-11 place-items-center rounded-full text-muted hover:bg-lavender hover:text-primary">
+       class="relative grid h-10 w-10 place-items-center rounded-lg text-muted hover:bg-slate-100 hover:text-ink">
       {% include "components/icon.html" with name="bell" %}
       {% if unread_notifications %}<span class="absolute right-2.5 top-2.5 h-2.5 w-2.5 rounded-full bg-accent ring-2 ring-white"></span>{% endif %}
     </a>

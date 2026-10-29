@@ -1,0 +1,11 @@
+{% comment %}
+  Small indigo label above a big heading; the last words (highlight) are indigo too. Fades up on scroll.
+  Usage: include "components/section_heading.html" with eyebrow="How it works" title="Three steps to a course you can" highlight="trust"
+  center=True centres the text.
+{% endcomment %}
+<div data-aos="fade-up" class="{% if center %}text-center{% endif %}">
+  <p class="text-sm font-bold uppercase tracking-[0.14em] text-primary">{{ eyebrow }}</p>
+  <h2 class="mt-2 max-w-xl text-balance text-2xl font-extrabold tracking-tight sm:text-4xl {% if center %}mx-auto{% endif %}">
+    {{ title }} <span class="text-primary">{{ highlight }}</span>
+  </h2>
+</div>

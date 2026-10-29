@@ -1,0 +1,9 @@
+{# One item in components/settings_nav.html: underlined on phones, a highlighted row on desktop. Usage: include "components/settings_nav_link.html" with url=... label=... icon="user" #}
+<li>
+  <a href="{{ url }}" {% if request.path == url %}aria-current="page"{% endif %}
+     class="flex min-h-[44px] items-center gap-2.5 whitespace-nowrap border-b-2 px-3 text-sm font-medium transition lg:min-h-[38px] lg:rounded-lg lg:border-b-0
+            {% if request.path == url %}border-primary text-ink lg:bg-white lg:shadow-sm lg:ring-1 lg:ring-line{% else %}border-transparent text-muted hover:text-ink lg:hover:bg-slate-100{% endif %}">
+    <span class="{% if request.path == url %}text-primary{% endif %}">{% include "components/icon.html" with name=icon size="h-4 w-4" %}</span>
+    {{ label }}
+  </a>
+</li>

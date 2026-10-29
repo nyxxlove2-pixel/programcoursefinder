@@ -3,50 +3,104 @@
 {% block title %}Compare · Program Course Finder{% endblock %}
 
 {% block content %}
-<section class="pt-10 sm:pt-14">
-  <p class="text-sm font-bold uppercase tracking-[0.14em] text-primary">Side by side</p>
-  <h1 class="mt-3 text-[2rem] font-extrabold leading-tight tracking-tight sm:text-5xl">Compare <span class="text-primary">courses</span></h1>
-  <p class="mt-3 text-lg text-muted">Up to 3 courses side by side. On a phone, swipe left and right.</p>
+{% url 'courses:search' as search_url %}
+<section class="pt-8 sm:pt-10">
+  <div class="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+    <div>
+      <p class="text-[10px] font-bold uppercase tracking-wider text-slate-400">Side by side</p>
+      <h1 class="mt-1 text-3xl font-bold tracking-tight text-ink sm:text-4xl">Compare courses</h1>
+      <p class="mt-2 text-slate-600">Up to 3 courses side by side. On a phone, swipe the table left and right.</p>
+    </div>
+    {% if courses and courses|length < 3 %}
+      {% include "components/button.html" with url=search_url label="Add a course" icon="plus" variant="ghost" %}
+    {% endif %}
+  </div>
 
   {% if courses %}
-    {# Swipeable cards on phones, a 3-column grid on bigger screens #}
-    <div class="-mx-4 mt-10 flex snap-x snap-mandatory gap-4 overflow-x-auto px-4 pb-4 md:mx-0 md:grid md:grid-cols-3 md:gap-5 md:overflow-visible md:px-0">
-      {% for course in courses %}
-        <article class="flex w-[85%] shrink-0 snap-center flex-col rounded-2xl border border-line bg-white shadow-panel md:w-auto">
-          <div class="border-b border-line p-6">
-            <div class="flex items-start justify-between gap-3">
-              {% include "components/monogram.html" with name=course.organization.name %}
-              {% include "components/verified_badge.html" %}
-            </div>
-            <h2 class="mt-4 text-lg font-bold leading-snug tracking-tight">
-              <a href="{% url 'courses:detail' course.pk %}" class="hover:text-primary">{{ course.name }}</a>
-            </h2>
-            <p class="mt-1 text-sm text-muted">{{ course.organization.name }}</p>
-            <p class="mt-4 text-2xl font-extrabold tracking-tight text-primary">{{ course.yearly_tuition|peso }}<span class="text-sm font-medium text-muted"> / year</span></p>
-            <div class="mt-2">{% include "components/stars.html" with rating=course.average_rating count=course.review_count %}</div>
-          </div>
-          <dl class="px-6 py-2">
-            {% include "components/info_row.html" with label="Per term" value=course.term_tuition|peso %}
-            {% include "components/info_row.html" with label="Distance" value=course.distance|km %}
-            {% include "components/info_row.html" with label="Address" value=course.organization.address %}
-            {% include "components/info_row.html" with label="Updated" value=course.last_updated|date:"M j, Y" %}
-          </dl>
-          <form method="post" action="{% url 'courses:compare_toggle' course.pk %}" class="mt-auto border-t border-line p-4">
-            {% csrf_token %}
-            {% include "components/button.html" with label="Remove" icon="close" variant="quiet" full=True %}
-          </form>
-        </article>
-      {% endfor %}
+    {% comment %}
+      A matrix: one column per course, one row per detail. The label column is sticky,
+      so it stays in view while the table scrolls sideways on phones.
+    {% endcomment %}
+    <div class="mt-8 overflow-x-auto rounded-xl border border-line bg-white shadow-panel">
+      <table class="w-full min-w-[40rem] table-fixed text-left text-sm">
+        <colgroup><col class="w-32 sm:w-44"></colgroup>
+        <thead>
+          <tr class="border-b border-line">
+            <th scope="col" class="sticky left-0 z-10 bg-white p-5 align-bottom">
+              <span class="text-[10px] font-bold uppercase tracking-wider text-slate-400">{{ courses|length }} of 3 selected</span>
+            </th>
+            {% for course in courses %}
+              <th scope="col" class="border-l border-line p-5 align-top font-normal">
+                <div class="flex items-start justify-between gap-2">
+                  {% include "components/monogram.html" with name=course.organization.name logo=course.organization.logo_url size="h-10 w-10 text-base" %}
+                  <form method="post" action="{% url 'courses:compare_toggle' course.pk %}">
+                    {% csrf_token %}
+                    <button aria-label="Remove {{ course.name }}" title="Remove"
+                            class="grid h-9 w-9 place-items-center rounded-lg text-slate-400 transition hover:bg-slate-100 hover:text-red-600">
+                      {% include "components/icon.html" with name="close" size="h-4 w-4" %}
+                    </button>
+                  </form>
+                </div>
+                <a href="{% url 'courses:detail' course.pk %}" class="mt-3 block font-semibold leading-snug tracking-tight text-ink hover:text-primary">{{ course.name }}</a>
+                <a href="{% url 'organizations:detail' course.organization.pk %}" class="mt-0.5 block text-xs text-slate-500 hover:text-ink">{{ course.organization.name }}</a>
+              </th>
+            {% endfor %}
+          </tr>
+        </thead>
+
+        <tbody class="divide-y divide-line">
+          <tr>
+            <th scope="row" class="sticky left-0 z-10 bg-white px-5 py-4 text-[10px] font-bold uppercase tracking-wider text-slate-400">Yearly tuition</th>
+            {% for course in courses %}
+              <td class="border-l border-line px-5 py-4">
+                <span class="inline-flex rounded-md bg-lavender px-2 py-0.5 font-bold text-primary ring-1 ring-inset ring-primary/10">{{ course.yearly_tuition|peso }}</span>
+              </td>
+            {% endfor %}
+          </tr>
+          <tr>
+            <th scope="row" class="sticky left-0 z-10 bg-white px-5 py-4 text-[10px] font-bold uppercase tracking-wider text-slate-400">Per term</th>
+            {% for course in courses %}<td class="border-l border-line px-5 py-4 font-medium text-ink">{{ course.term_tuition|peso|default:"—" }}</td>{% endfor %}
+          </tr>
+          <tr>
+            <th scope="row" class="sticky left-0 z-10 bg-white px-5 py-4 text-[10px] font-bold uppercase tracking-wider text-slate-400">Rating</th>
+            {% for course in courses %}
+              <td class="border-l border-line px-5 py-4">{% include "components/stars.html" with rating=course.average_rating count=course.review_count size="h-3.5 w-3.5" %}</td>
+            {% endfor %}
+          </tr>
+          <tr>
+            <th scope="row" class="sticky left-0 z-10 bg-white px-5 py-4 text-[10px] font-bold uppercase tracking-wider text-slate-400">Distance</th>
+            {% for course in courses %}<td class="border-l border-line px-5 py-4 text-slate-600">{{ course.distance|km|default:"—" }}</td>{% endfor %}
+          </tr>
+          <tr>
+            <th scope="row" class="sticky left-0 z-10 bg-white px-5 py-4 text-[10px] font-bold uppercase tracking-wider text-slate-400">Address</th>
+            {% for course in courses %}<td class="border-l border-line px-5 py-4 text-slate-600">{{ course.organization.address|default:"—" }}</td>{% endfor %}
+          </tr>
+          <tr>
+            <th scope="row" class="sticky left-0 z-10 bg-white px-5 py-4 text-[10px] font-bold uppercase tracking-wider text-slate-400">Status</th>
+            {% for course in courses %}<td class="border-l border-line px-5 py-4">{% include "components/verified_badge.html" %}</td>{% endfor %}
+          </tr>
+          <tr>
+            <th scope="row" class="sticky left-0 z-10 bg-white px-5 py-4 text-[10px] font-bold uppercase tracking-wider text-slate-400">Updated</th>
+            {% for course in courses %}<td class="border-l border-line px-5 py-4 text-slate-600">{{ course.last_updated|date:"M j, Y" }}</td>{% endfor %}
+          </tr>
+          <tr class="bg-slate-50">
+            <th scope="row" class="sticky left-0 z-10 bg-slate-50 px-5 py-4"><span class="sr-only">Links</span></th>
+            {% for course in courses %}
+              <td class="border-l border-line px-5 py-4">
+                {% url 'courses:detail' course.pk as detail_url %}
+                {% include "components/button.html" with url=detail_url label="View course" variant="ghost" full=True %}
+              </td>
+            {% endfor %}
+          </tr>
+        </tbody>
+      </table>
     </div>
   {% else %}
-    <div class="mt-10 rounded-2xl border-2 border-dashed border-line px-6 py-14 text-center">
-      <span class="mx-auto grid h-14 w-14 place-items-center rounded-2xl bg-lavender text-primary">{% include "components/icon.html" with name="compare" size="h-6 w-6" %}</span>
-      <p class="mt-4 text-lg font-bold">Nothing to compare yet</p>
-      <p class="mt-1 text-sm text-muted">Tap "Compare" on any course to add it here.</p>
-      <div class="mt-6">
-        {% url 'courses:search' as search_url %}
-        {% include "components/button.html" with url=search_url label="Find courses" %}
-      </div>
+    <div class="mt-8 rounded-xl border border-dashed border-slate-300 bg-white px-6 py-16 text-center">
+      <span class="mx-auto grid h-12 w-12 place-items-center rounded-lg bg-slate-100 text-slate-500">{% include "components/icon.html" with name="compare" %}</span>
+      <p class="mt-4 font-semibold text-ink">Nothing to compare yet</p>
+      <p class="mx-auto mt-1 max-w-sm text-sm text-slate-500">Tap "Compare" on any course card to add it here. You can line up to 3 courses side by side.</p>
+      <div class="mt-6">{% include "components/button.html" with url=search_url label="Find courses" icon="search" %}</div>
     </div>
   {% endif %}
 </section>

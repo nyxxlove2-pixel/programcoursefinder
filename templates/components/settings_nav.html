@@ -1,0 +1,18 @@
+{# Side menu on the settings pages (a scrolling row on phones). Users and organizations get different first items. #}
+<nav aria-label="Settings" class="-mx-4 overflow-x-auto border-b border-line px-4 lg:mx-0 lg:self-start lg:border-0 lg:px-0">
+  <ul class="flex gap-1 lg:flex-col">
+    {% if current_user.is_organization %}
+      {% url 'organizations:edit' as college_url %}
+      {% include "components/settings_nav_link.html" with url=college_url label="College profile" icon="college" %}
+    {% else %}
+      {% url 'accounts:settings' as profile_url %}
+      {% url 'accounts:settings_location' as location_url %}
+      {% include "components/settings_nav_link.html" with url=profile_url label="Profile" icon="user" %}
+      {% include "components/settings_nav_link.html" with url=location_url label="Location" icon="pin" %}
+    {% endif %}
+    {% url 'accounts:settings_account' as account_url %}
+    {% url 'accounts:settings_password' as password_url %}
+    {% include "components/settings_nav_link.html" with url=account_url label="Account" icon="mail" %}
+    {% include "components/settings_nav_link.html" with url=password_url label="Password" icon="lock" %}
+  </ul>
+</nav>

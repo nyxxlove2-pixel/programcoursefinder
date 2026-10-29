@@ -19,6 +19,7 @@ class User(models.Model):
     password_hash = models.TextField()
     full_name = models.TextField()
     role = models.TextField(choices=ROLE_CHOICES)
+    avatar_url = models.URLField(blank=True, null=True)  # profile photo (see core/uploads.py)
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
@@ -51,6 +52,7 @@ class UserProfile(models.Model):
     latitude = models.DecimalField(max_digits=9, decimal_places=6, blank=True, null=True)
     longitude = models.DecimalField(max_digits=9, decimal_places=6, blank=True, null=True)
     share_location = models.BooleanField(default=False)
+    cover_url = models.URLField(blank=True, null=True)  # background image on the profile page
 
     class Meta:
         managed = False

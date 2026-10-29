@@ -1,12 +1,12 @@
 {# Floating bar at the bottom of the screen once courses are picked for comparing. Needs `compare_ids`. #}
 {% if compare_ids %}
-  <div class="fixed inset-x-4 bottom-4 z-30 mx-auto flex max-w-md items-center justify-between gap-3 rounded-full bg-ink py-2 pl-3 pr-2 text-white shadow-2xl ring-1 ring-white/10">
+  <div class="fixed inset-x-4 bottom-4 z-30 mx-auto flex max-w-md items-center justify-between gap-3 rounded-xl bg-slate-900 py-2 pl-3 pr-2 text-white shadow-2xl ring-1 ring-white/10">
     <p class="flex items-center gap-2.5 text-sm font-semibold">
-      <span class="grid h-7 w-7 place-items-center rounded-full bg-white/15 text-xs font-bold">{{ compare_ids|length }}</span>
+      <span class="grid h-7 w-7 place-items-center rounded-md bg-white/15 text-xs font-bold">{{ compare_ids|length }}</span>
       course{{ compare_ids|length|pluralize }} selected
     </p>
     <a href="{% url 'courses:compare' %}"
-       class="inline-flex min-h-[44px] items-center gap-2 rounded-full bg-primary px-5 font-semibold hover:bg-primary-dark">
+       class="inline-flex min-h-[44px] items-center gap-2 rounded-lg bg-primary px-4 text-sm font-semibold hover:bg-primary-dark">
       Compare now
       {% include "components/icon.html" with name="arrow" size="h-4 w-4" %}
     </a>

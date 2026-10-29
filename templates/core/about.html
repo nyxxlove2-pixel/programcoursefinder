@@ -1,0 +1,139 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}About · Program Course Finder{% endblock %}
+
+{% block content %}
+{% url 'courses:search' as search_url %}
+{% url 'accounts:register' as register_url %}
+
+{# ---------- Hero (same look as the home page hero) ---------- #}
+<section class="grid items-center gap-14 pt-10 md:grid-cols-2 md:pt-20">
+  <div>
+    <span data-aos="fade-up" class="inline-flex items-center gap-2 rounded-full border border-line bg-white px-4 py-1.5 text-sm font-semibold">
+      <span class="text-primary">{% include "components/icon.html" with name="info" size="h-4 w-4" %}</span>
+      About us
+    </span>
+    <h1 data-aos="fade-up" data-aos-delay="100" class="mt-6 text-balance text-[2rem] font-extrabold leading-[1.08] tracking-tight sm:text-5xl md:text-[3.25rem]">
+      Helping students choose with <span class="text-primary">confidence</span>
+    </h1>
+    <p data-aos="fade-up" data-aos-delay="200" class="mt-6 max-w-md text-lg leading-relaxed text-muted">
+      Program Course Finder puts verified colleges, real tuition, distance from your home, and honest reviews
+      in one place, so you can pick the course that fits you.
+    </p>
+    <div data-aos="fade-up" data-aos-delay="300" class="mt-8 flex flex-col gap-3 sm:flex-row">
+      {% include "components/button.html" with url=search_url label="Find courses" %}
+      {% include "components/button.html" with url="#how-we-verify" label="How we verify ↗" variant="ghost" %}
+    </div>
+  </div>
+
+  {# Right side: campus photo with floating shapes and cards #}
+  <div data-aos="zoom-in" data-aos-duration="900" class="relative mx-auto mb-6 w-full max-w-xs sm:max-w-sm md:max-w-md">
+    <div class="absolute -top-6 right-0 h-40 w-40 rounded-full bg-accent motion-safe:animate-float-slow sm:h-56 sm:w-56 md:-right-8"></div>
+    <div class="absolute bottom-10 left-0 h-48 w-24 rounded-r-full bg-primary sm:h-64 sm:w-32 md:-left-8"></div>
+
+    <div class="group relative ml-8 aspect-[4/5] overflow-hidden rounded-3xl shadow-soft sm:ml-12">
+      <img src="{% static 'images/student-campus.png' %}" alt="Student with a laptop and coffee walking on campus"
+           class="h-full w-full object-cover object-[62%_center] transition duration-700 group-hover:scale-105">
+    </div>
+
+    <span class="absolute -bottom-3 right-10 h-4 w-4 rotate-45 rounded-sm bg-primary motion-safe:animate-pulse" aria-hidden="true"></span>
+
+    <div class="absolute right-0 top-12 flex items-center gap-3 rounded-2xl border border-line bg-white p-3 pr-5 shadow-soft motion-safe:animate-float md:-right-10">
+      <span class="grid h-7 w-7 place-items-center rounded-lg bg-primary text-white">{% include "components/icon.html" with name="verified" size="h-4 w-4" %}</span>
+      <div>
+        <p class="text-sm font-bold text-primary">Verified data only</p>
+        <p class="text-xs text-muted">Checked documents</p>
+      </div>
+    </div>
+
+    <div class="absolute -bottom-6 left-0 flex items-center gap-3 rounded-2xl border border-line bg-white p-3 pr-5 shadow-soft motion-safe:animate-float [animation-delay:-3s] md:-left-8">
+      <span class="grid h-9 w-9 place-items-center rounded-xl bg-lavender text-primary">{% include "components/icon.html" with name="user" size="h-5 w-5" %}</span>
+      <div>
+        <p class="text-sm font-bold">Freshmen and transferees</p>
+        <p class="text-xs text-muted">Built for every student</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+{# ---------- Guiding principle ---------- #}
+<section data-aos="fade-up" class="relative mt-28 overflow-hidden rounded-[28px] border border-line bg-white px-6 py-14 text-center shadow-panel sm:px-12">
+  <div class="absolute -left-10 -top-10 h-32 w-32 rounded-full bg-lavender motion-safe:animate-float-slow" aria-hidden="true"></div>
+  <div class="absolute -bottom-12 -right-6 h-36 w-36 rounded-full bg-accent/15 motion-safe:animate-float" aria-hidden="true"></div>
+  <div class="relative">
+    <span class="mx-auto grid h-12 w-12 place-items-center rounded-xl bg-lavender text-primary">{% include "components/icon.html" with name="sparkle" %}</span>
+    <p class="mt-5 text-sm font-bold uppercase tracking-[0.14em] text-primary">Our guiding principle</p>
+    <h2 class="mt-2 text-3xl font-extrabold tracking-tight sm:text-5xl">We inform. <span class="text-primary">You decide.</span></h2>
+    <p class="mx-auto mt-5 max-w-2xl text-lg leading-relaxed text-muted">
+      We compare options by your interests, budget, and location, but we never call one college "the best" for everyone.
+      Best means the best fit for you.
+    </p>
+  </div>
+</section>
+
+{# ---------- What we stand for ---------- #}
+<section class="mt-28">
+  {% include "components/section_heading.html" with eyebrow="What we stand for" title="Information you can" highlight="trust" %}
+  <div class="mt-10 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
+    {% include "components/feature_card.html" with icon="verified" title="Verified colleges" text="Every college uploads official documents and is checked before it can list a course." %}
+    {% include "components/feature_card.html" with icon="compare" title="Fair comparisons" text="Put up to 3 courses side by side: tuition, distance, ratings, and details." delay="100" %}
+    {% include "components/feature_card.html" with icon="chat" title="Real reviews" text="Ratings and comments come from students, and colleges can reply in the open." delay="200" %}
+    {% include "components/feature_card.html" with icon="sparkle" title="AI that helps you think" text="The assistant uses verified data only and never makes the choice for you." delay="300" %}
+  </div>
+</section>
+
+{# ---------- How we verify ---------- #}
+<section id="how-we-verify" class="mt-28 grid scroll-mt-24 gap-10 lg:grid-cols-[1fr_1.5fr] lg:gap-16">
+  <div>
+    {% include "components/section_heading.html" with eyebrow="How we verify" title="Every college is" highlight="checked first" %}
+    <p data-aos="fade-up" data-aos-delay="100" class="mt-5 max-w-md leading-relaxed text-muted">
+      A college cannot publish its profile or courses until its documents are approved: government recognition,
+      business registration, an authorization letter, and proof that its official pages are really theirs.
+    </p>
+  </div>
+  <ol class="grid gap-8 sm:grid-cols-2">
+    {% include "components/step_card.html" with number="1" title="Submit" text="The college registers and uploads its official documents." %}
+    {% include "components/step_card.html" with number="2" title="Review" text="Each document is checked. Missing or unclear papers are sent back with a reason." %}
+    {% include "components/step_card.html" with number="3" title="Get the badge" text="Approved colleges show the Verified badge and can list their courses." %}
+    {% include "components/step_card.html" with number="4" title="Stay honest" text="Students can report wrong information, and repeated problems lead to suspension." %}
+  </ol>
+</section>
+
+{# ---------- Who it is for ---------- #}
+<section class="mt-28 grid gap-5 md:grid-cols-2">
+  <div data-aos="fade-up" class="rounded-[28px] bg-lavender p-8 sm:p-10">
+    <span class="grid h-12 w-12 place-items-center rounded-xl bg-white text-primary shadow-panel">{% include "components/icon.html" with name="user" %}</span>
+    <h2 class="mt-6 text-2xl font-extrabold tracking-tight">For students</h2>
+    <p class="mt-2 leading-relaxed text-muted">Whether you are starting college or shifting courses, find options that fit your budget and your commute.</p>
+    <ul class="mt-6 space-y-3 font-medium">
+      {% include "components/check_item.html" with text="Search by course, college, or tuition" %}
+      {% include "components/check_item.html" with text="See how far each campus is from home" %}
+      {% include "components/check_item.html" with text="Ask the AI assistant your questions" %}
+    </ul>
+    <div class="mt-8">{% include "components/button.html" with url=search_url label="Find courses" icon="search" %}</div>
+  </div>
+
+  <div data-aos="fade-up" data-aos-delay="150" class="relative overflow-hidden rounded-[28px] bg-ink p-8 text-white sm:p-10">
+    <div class="absolute -right-12 -top-12 h-40 w-40 rounded-full bg-accent/90 motion-safe:animate-float-slow" aria-hidden="true"></div>
+    <div class="relative">
+      <span class="grid h-12 w-12 place-items-center rounded-xl bg-white/10 text-white">{% include "components/icon.html" with name="college" %}</span>
+      <h2 class="mt-6 text-2xl font-extrabold tracking-tight">For colleges</h2>
+      <p class="mt-2 leading-relaxed text-white/70">Show your verified courses, tuition, and campus to students who are already looking for them.</p>
+      <ul class="mt-6 space-y-3 font-medium">
+        {% include "components/check_item.html" with text="A profile with the Verified badge" %}
+        {% include "components/check_item.html" with text="Add courses one by one or in bulk" %}
+        {% include "components/check_item.html" with text="Reply to student reviews" %}
+      </ul>
+      {% if not current_user %}
+        <div class="mt-8">{% include "components/button.html" with url=register_url label="Register your college" variant="outline" icon="college" %}</div>
+      {% endif %}
+    </div>
+  </div>
+</section>
+
+{# ---------- Call to action (visitors only) ---------- #}
+{% if not current_user %}
+  {% include "components/cta_banner.html" %}
+{% endif %}
+{% endblock %}

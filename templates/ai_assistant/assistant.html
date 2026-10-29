@@ -1,93 +1,127 @@
 {% extends "base.html" %}
-{% block title %}AI assistant · Program Course Finder{% endblock %}
+{% load static %}
+{% block title %}{% if conversation %}{{ conversation.title }} · {% endif %}AI assistant · Program Course Finder{% endblock %}
+{% block body_class %}bg-white{% endblock %}
 
-{% block content %}
-<div class="grid gap-8 pt-10 sm:pt-14 lg:grid-cols-[1fr_18rem] lg:gap-12">
-  <section class="min-w-0">
-    <p class="inline-flex items-center gap-1.5 text-sm font-bold uppercase tracking-[0.14em] text-primary">
-      {% include "components/icon.html" with name="sparkle" size="h-4 w-4" %} AI assistant
-    </p>
-    <h1 class="mt-3 text-balance text-[2rem] font-extrabold leading-[1.1] tracking-tight sm:text-5xl">Ask about your <span class="text-primary">options</span></h1>
-    <p class="mt-4 max-w-xl text-lg leading-relaxed text-muted">Ask in plain words. Answers come only from verified courses, their reviews, tuition, and distance, with the source of each fact.</p>
+{% comment %}
+  Full-screen chat page with its own layout: no top navbar, a sidebar with the saved chats
+  (a slide-in drawer on phones), and the chat on the right. Questions are sent by
+  static/js/assistant.js without reloading; without JavaScript the form still posts normally.
+{% endcomment %}
+{% block body %}
+{% url 'courses:search' as back_url %}
+{% url 'ai_assistant:assistant' as new_chat_url %}
 
-    {# ---------- Conversation ---------- #}
-    <div class="mt-8 overflow-hidden rounded-2xl border border-line bg-white shadow-panel">
-      {% if chat %}
-        <ol class="divide-y divide-line">
-          {% for turn in chat %}
-            <li class="space-y-4 p-5 sm:p-6">
-              <div class="flex items-start gap-3">
-                {% include "components/avatar.html" with name=current_user.full_name %}
-                <p class="pt-1.5 font-semibold">{{ turn.question }}</p>
-              </div>
-              <div class="flex items-start gap-3">
-                <span class="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-lavender text-primary">{% include "components/icon.html" with name="sparkle" size="h-4 w-4" %}</span>
-                <div class="min-w-0 pt-1.5">
-                  <p class="leading-relaxed text-ink/80">{{ turn.answer|linebreaksbr }}</p>
-                  {% if turn.sources %}
-                    <p class="mt-4 text-xs font-bold uppercase tracking-wider text-muted">Sources</p>
-                    <ol class="mt-2 flex flex-wrap gap-2">
-                      {% for source in turn.sources %}
-                        <li>
-                          <a href="{% url 'courses:detail' source.id %}"
-                             class="inline-flex min-h-[36px] items-center gap-2 rounded-full border border-line px-3 text-sm hover:border-primary/40 hover:text-primary">
-                            <span class="font-bold text-primary">{{ forloop.counter }}</span>
-                            <span class="font-semibold">{{ source.name }}</span>
-                            <span class="hidden text-muted sm:inline">· {{ source.college }}</span>
-                          </a>
-                        </li>
-                      {% endfor %}
-                    </ol>
-                  {% endif %}
-                </div>
-              </div>
-            </li>
-          {% endfor %}
-        </ol>
-      {% else %}
-        {# Example questions: tapping one puts it in the box below #}
-        <div class="px-5 py-10 text-center sm:px-8">
-          <span class="mx-auto grid h-12 w-12 place-items-center rounded-2xl bg-lavender text-primary">{% include "components/icon.html" with name="sparkle" %}</span>
-          <p class="mt-3 font-bold">Try asking</p>
-          <div class="mt-4 flex flex-wrap justify-center gap-2">
-            {% for example in example_questions %}
-              <button type="button" onclick="document.getElementById('id_question').value = this.textContent.trim()"
-                      class="min-h-[44px] rounded-full border border-line px-4 text-sm font-semibold text-muted hover:border-primary/40 hover:text-primary">{{ example }}</button>
-            {% endfor %}
-          </div>
-        </div>
-      {% endif %}
-
-      {# ---------- Question box ---------- #}
-      <form method="post" class="border-t border-line bg-lavender/40 p-4 sm:p-5">
-        {% csrf_token %}
-        {% include "components/form_field.html" with field=form.question %}
-        <div class="mt-3 flex flex-col-reverse gap-2 sm:flex-row sm:items-center sm:justify-between">
-          {% if chat %}
-            <button form="clear-chat" class="min-h-[44px] rounded-full px-4 text-sm font-semibold text-muted hover:bg-lavender hover:text-primary">Clear chat</button>
-          {% else %}
-            <span></span>
-          {% endif %}
-          {% include "components/button.html" with label="Ask" icon="send" %}
-        </div>
-      </form>
-      <form id="clear-chat" method="post" action="{% url 'ai_assistant:clear_chat' %}">{% csrf_token %}</form>
+{# ---------- Sidebar: back link, new chat, chat history ---------- #}
+<div id="chat-menu" class="fixed inset-0 z-50 hidden bg-ink/40 lg:right-auto lg:block lg:bg-transparent"
+     onclick="if (event.target === this) this.classList.add('hidden')">
+  <aside class="flex h-full w-[85%] max-w-xs flex-col border-r border-line bg-slate-50 shadow-2xl lg:w-72 lg:shadow-none">
+    <div class="flex h-14 items-center justify-between gap-2 border-b border-line px-3 sm:h-16">
+      <a href="{{ back_url }}"
+         class="inline-flex min-h-[44px] items-center gap-2 rounded-lg px-2 text-sm font-semibold text-muted transition hover:text-primary">
+        {% include "components/icon.html" with name="back" size="h-4 w-4" %} Back to courses
+      </a>
+      {% include "components/menu_button.html" with target="chat-menu" hide_from="lg" icon="close" label="Close chats" %}
     </div>
-  </section>
 
-  {# ---------- How it works ---------- #}
-  <aside class="space-y-4 self-start lg:sticky lg:top-24 lg:mt-36">
-    {% if not has_location %}
-      {% include "components/alert.html" with tone="warning" title="No location yet." text="Add your location in My profile so answers can include distance." %}
-    {% endif %}
-    <div class="rounded-2xl border border-line bg-white p-5 shadow-panel">
-      <h2 class="text-sm font-bold uppercase tracking-[0.12em] text-muted">Good to know</h2>
-      <ul class="mt-3 space-y-3 text-sm leading-relaxed text-muted">
-        <li class="flex gap-2"><span class="text-primary">{% include "components/icon.html" with name="verified" size="h-4 w-4" %}</span>Only verified colleges are used. Ads never affect answers.</li>
-        <li class="flex gap-2"><span class="text-primary">{% include "components/icon.html" with name="info" size="h-4 w-4" %}</span>If the data is missing, it says it does not know.</li>
-        <li class="flex gap-2"><span class="text-primary">{% include "components/icon.html" with name="check" size="h-4 w-4" %}</span>It informs; the final choice is always yours.</li>
-      </ul>
+    <div class="px-3 pt-4">
+      {% include "components/button.html" with url=new_chat_url label="New chat" variant="outline" icon="plus" full=True %}
+    </div>
+
+    <nav class="mt-5 flex-1 overflow-y-auto px-3 pb-4" aria-label="Chat history">
+      <p class="px-3 text-xs font-semibold text-slate-400">Recent chats</p>
+      <ol id="chat-history" class="mt-2 space-y-0.5">
+        {% for item in conversations %}
+          {% include "ai_assistant/chat_history_link.html" %}
+        {% endfor %}
+      </ol>
+      {% if not conversations %}
+        <p id="history-empty" class="px-3 pt-1 text-sm text-muted">Your chats will show up here.</p>
+      {% endif %}
+    </nav>
+
+    <div class="flex items-center gap-3 border-t border-line p-4">
+      {% include "components/avatar.html" with name=current_user.full_name photo=current_user.avatar_url %}
+      <p class="truncate text-sm font-semibold">{{ current_user.full_name }}</p>
     </div>
   </aside>
 </div>
+
+<div class="flex min-h-[100dvh] flex-col lg:pl-72">
+  {# ---------- Top bar (phones: back, title, new chat, saved chats) ---------- #}
+  <header class="sticky top-0 z-20 flex h-14 items-center gap-2 border-b border-line bg-white/95 px-4 backdrop-blur sm:h-16 sm:gap-3 sm:px-6">
+    {% include "components/icon_link.html" with url=back_url icon="back" label="Back to courses" hide_from="lg" %}
+    <div class="min-w-0 flex-1 pl-1">
+      <p class="truncate text-[15px] font-bold leading-tight">Course Finder AI</p>
+      <p class="truncate text-xs text-muted">Answers from verified colleges</p>
+    </div>
+    {% include "components/icon_link.html" with url=new_chat_url icon="plus" label="New chat" hide_from="lg" %}
+    {% include "components/menu_button.html" with target="chat-menu" hide_from="lg" label="Open saved chats" %}
+  </header>
+
+  <main class="mx-auto flex w-full max-w-3xl flex-1 flex-col px-4 sm:px-6">
+    {% include "components/messages.html" %}
+
+    {# ---------- Greeting and suggestions (before the first question) ---------- #}
+    <section id="chat-empty" class="{% if chat %}hidden{% endif %} flex flex-1 flex-col justify-center py-8">
+      {% include "components/logo_mark.html" with size="h-11 w-11" %}
+      <h1 class="mt-5 text-2xl font-bold tracking-tight sm:text-3xl">Hi {{ first_name|default:"there" }}, how can I help?</h1>
+      <p class="mt-2 max-w-lg leading-relaxed text-muted">
+        Ask about courses, tuition, distance, or reviews. I only use information from verified colleges, and the final choice is always yours.
+      </p>
+
+      <p class="mt-8 text-xs font-semibold text-slate-400">Try asking</p>
+      <ul class="mt-2 divide-y divide-line overflow-hidden rounded-xl border border-line bg-white">
+        {% for example in example_questions %}
+          {% cycle 'course' 'money' 'chat' as example_icon silent %}
+          <li>
+            <button type="button" data-example="{{ example }}"
+                    class="flex min-h-[56px] w-full items-center gap-3 px-4 py-3 text-left text-sm font-medium text-ink transition hover:bg-slate-50">
+              <span class="grid h-8 w-8 shrink-0 place-items-center rounded-lg bg-lavender text-primary">
+                {% include "components/icon.html" with name=example_icon size="h-4 w-4" %}
+              </span>
+              <span class="flex-1 leading-snug">{{ example }}</span>
+              <span class="shrink-0 text-slate-400">{% include "components/icon.html" with name="arrow" size="h-4 w-4" %}</span>
+            </button>
+          </li>
+        {% endfor %}
+      </ul>
+    </section>
+
+    {# ---------- Conversation ---------- #}
+    <ol id="chat-log" class="{% if not chat %}hidden{% endif %} flex-1 space-y-6 py-6 sm:space-y-8 sm:py-8">
+      {% for turn in chat %}
+        {% include "ai_assistant/chat_question.html" with question=turn.question %}
+        {% include "ai_assistant/chat_answer.html" %}
+      {% endfor %}
+    </ol>
+
+    {# ---------- Question box (stays at the bottom of the screen) ---------- #}
+    <form id="chat-form" method="post" class="sticky bottom-0 -mx-4 border-t border-line bg-white px-4 pb-3 pt-3 sm:mx-0 sm:border-0 sm:px-0 sm:pb-5">
+      {% csrf_token %}
+      <div class="flex items-end gap-2 rounded-xl border border-slate-300 bg-white p-1.5 pl-3.5 shadow-sm transition focus-within:border-primary focus-within:ring-2 focus-within:ring-primary/20">
+        <label for="id_question" class="sr-only">Your question</label>
+        <textarea id="id_question" name="question" rows="1" maxlength="500" required
+                  placeholder="Ask about courses, tuition, or reviews…"
+                  class="max-h-40 flex-1 resize-none border-0 bg-transparent px-0 py-2.5 text-base leading-relaxed placeholder:text-slate-400 focus:ring-0 sm:text-sm"></textarea>
+        <button id="chat-send" aria-label="Send question"
+                class="grid h-11 w-11 shrink-0 place-items-center rounded-lg bg-primary text-white transition hover:bg-primary-dark disabled:bg-slate-100 disabled:text-slate-400">
+          {% include "components/icon.html" with name="send" size="h-5 w-5" %}
+        </button>
+      </div>
+      {% if form.question.errors %}<p class="mt-2 text-sm text-red-600">{{ form.question.errors.0 }}</p>{% endif %}
+      <p class="mt-2 text-center text-xs leading-relaxed text-muted">
+        Ads never affect answers. Check important details with the college.
+        {% if not has_location %}<a href="{% url 'accounts:settings_location' %}" class="font-semibold text-primary hover:underline">Add your location</a> to include distance.{% endif %}
+      </p>
+    </form>
+  </main>
+</div>
+
+{# Pieces that assistant.js copies into the chat #}
+<template id="question-template">{% include "ai_assistant/chat_question.html" with question="" %}</template>
+<template id="thinking-template">{% include "ai_assistant/chat_thinking.html" %}</template>
+<template id="error-template"><li class="animate-rise-in sm:pl-[2.375rem]">{% include "components/alert.html" with tone="error" text="" %}</li></template>
+
+<script src="{% static 'js/assistant.js' %}" defer></script>
 {% endblock %}

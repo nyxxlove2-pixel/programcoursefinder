@@ -1,0 +1,42 @@
+{% extends base_layout %}
+{% comment %}
+  Settings pages for both roles: a side menu (components/settings_nav.html) and one form, with each
+  field on its own row (components/setting_row.html). Needs `form`.
+  Child pages fill: section_title, section_description, image_rows (optional), actions (optional).
+{% endcomment %}
+
+{% block content %}
+<div class="py-8 lg:py-12">
+  <header class="border-b border-line pb-6">
+    <p class="text-[10px] font-bold uppercase tracking-wider text-slate-400">Account</p>
+    <h1 class="mt-1 text-2xl font-bold tracking-tight text-ink">Settings</h1>
+    <p class="mt-1 text-sm text-muted">Manage your {% if current_user.is_organization %}college profile{% else %}profile{% endif %} and account.</p>
+  </header>
+
+  <div class="mt-6 grid gap-8 lg:mt-8 lg:grid-cols-[12rem_1fr] lg:gap-12">
+    {% include "components/settings_nav.html" %}
+
+    <section class="min-w-0 max-w-3xl">
+      <h2 class="text-lg font-semibold tracking-tight text-ink">{% block section_title %}{% endblock %}</h2>
+      <p class="mt-1 text-sm leading-relaxed text-slate-600">{% block section_description %}{% endblock %}</p>
+
+      <form method="post" enctype="multipart/form-data" class="mt-5 rounded-xl border border-line bg-white shadow-panel">
+        {% csrf_token %}
+        {% for field in form.hidden_fields %}{{ field }}{% endfor %}
+        {% if form.non_field_errors %}
+          <div class="px-5 pt-5 sm:px-6">{% include "components/alert.html" with tone="error" text=form.non_field_errors|join:" " %}</div>
+        {% endif %}
+        <div class="divide-y divide-line">
+          {% block image_rows %}{% endblock %}
+          {% for field in form.visible_fields %}
+            {% include "components/setting_row.html" %}
+          {% endfor %}
+        </div>
+        <div class="flex items-center justify-end gap-2 rounded-b-xl border-t border-line bg-slate-50 px-5 py-3 sm:px-6">
+          {% block actions %}{% include "components/button.html" with label="Save changes" %}{% endblock %}
+        </div>
+      </form>
+    </section>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,12 @@
+{% extends "layouts/settings_page.html" %}
+{% block title %}Profile settings · Program Course Finder{% endblock %}
+{% block section_title %}Profile{% endblock %}
+{% block section_description %}Your photo appears in the navigation bar and next to your reviews.{% endblock %}
+{% block image_rows %}
+  {% include "components/profile_images.html" with images=images photo_url=current_user.avatar_url cover_url=profile.cover_url name=current_user.full_name photo_label="Profile photo" %}
+{% endblock %}
+{% block actions %}
+  {% url 'accounts:profile' as profile_url %}
+  {% include "components/button.html" with url=profile_url label="View profile" variant="quiet" %}
+  {% include "components/button.html" with label="Save changes" %}
+{% endblock %}

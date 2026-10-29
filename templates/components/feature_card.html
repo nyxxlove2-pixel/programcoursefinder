@@ -1,0 +1,14 @@
+{% comment %}
+  White card with an icon chip, a title, and a short text. Fades up on scroll and lifts on hover.
+  Usage: include "components/feature_card.html" with icon="verified" title="..." text="..." delay="100"
+  The fade sits on the outer div because AOS and the hover lift both use transform.
+{% endcomment %}
+<div data-aos="fade-up" data-aos-delay="{{ delay|default:'0' }}" class="grid">
+  <div class="group rounded-2xl border border-line bg-white p-6 shadow-panel transition duration-300 hover:-translate-y-1 hover:border-primary/30 hover:shadow-soft">
+    <span class="grid h-12 w-12 place-items-center rounded-xl bg-lavender text-primary transition duration-300 group-hover:bg-primary group-hover:text-white">
+      {% include "components/icon.html" with name=icon %}
+    </span>
+    <h3 class="mt-5 text-lg font-bold tracking-tight">{{ title }}</h3>
+    <p class="mt-2 leading-relaxed text-muted">{{ text }}</p>
+  </div>
+</div>

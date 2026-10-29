@@ -1,2 +1,6 @@
-{# Rounded square with a college's first letter, used where a logo would go. Usage: include "components/monogram.html" with name=organization.name size="h-11 w-11 text-lg" #}
-<span class="grid {{ size|default:'h-11 w-11 text-lg' }} shrink-0 place-items-center rounded-xl bg-gradient-to-br from-lavender to-line font-extrabold text-primary" aria-hidden="true">{{ name|first|upper }}</span>
+{# A college's logo, or a rounded square with its first letter. Usage: include "components/monogram.html" with name=organization.name logo=organization.logo_url size="h-11 w-11 text-lg" #}
+{% if logo %}
+  <img src="{{ logo }}" alt="" class="{{ size|default:'h-11 w-11 text-lg' }} shrink-0 rounded-lg bg-white object-cover ring-1 ring-line" aria-hidden="true">
+{% else %}
+  <span class="grid {{ size|default:'h-11 w-11 text-lg' }} shrink-0 place-items-center rounded-lg bg-lavender font-bold text-primary ring-1 ring-inset ring-primary/10" aria-hidden="true">{{ name|first|upper }}</span>
+{% endif %}

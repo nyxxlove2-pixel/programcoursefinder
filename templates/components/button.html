@@ -1,16 +1,19 @@
 {% comment %}
-  Pill-shaped button. With a url it is a link; without one it is a form submit button.
+  Button with slightly rounded corners. With a url it is a link; without one it is a form submit button.
   Usage: include "components/button.html" with url=... label=... variant="outline" icon="plus" full=True
-  variant: (empty) = filled purple, "outline" = white with purple border, "ghost" = soft, "quiet" = text only
+  variant: (empty) = filled indigo, "dark" = filled slate, "outline" = white with indigo border,
+  "ghost" = white with a grey border, "quiet" = text only
   icon (optional) shows before the label; full=True stretches it to the full width.
+  new_tab=True opens the link in a new tab (for outside sites like Google Maps).
 {% endcomment %}
-{% if url %}<a href="{{ url }}"{% else %}<button type="submit"{% endif %}
-   class="inline-flex min-h-[44px] items-center justify-center gap-2 whitespace-nowrap rounded-full px-6 py-2.5 text-center font-semibold transition
-          focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-primary/25 {% if full %}w-full{% endif %}
-          {% if variant == 'outline' %}border border-primary/40 bg-white text-primary hover:border-primary hover:bg-lavender
-          {% elif variant == 'ghost' %}border border-line bg-white text-ink hover:border-primary/40 hover:text-primary
-          {% elif variant == 'quiet' %}text-muted hover:bg-lavender hover:text-primary
-          {% else %}bg-primary text-white shadow-[0_6px_16px_-6px_rgba(91,79,233,0.6)] hover:-translate-y-0.5 hover:bg-primary-dark{% endif %}">
+{% if url %}<a href="{{ url }}"{% if new_tab %} target="_blank" rel="noopener"{% endif %}{% else %}<button type="submit"{% endif %}
+   class="inline-flex min-h-[44px] items-center justify-center gap-2 whitespace-nowrap rounded-lg px-4 py-2.5 text-center text-sm font-semibold transition
+          focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-2 {% if full %}w-full{% endif %}
+          {% if variant == 'dark' %}bg-slate-900 text-white shadow-sm hover:bg-slate-800
+          {% elif variant == 'outline' %}border border-primary/30 bg-white text-primary hover:border-primary hover:bg-lavender
+          {% elif variant == 'ghost' %}border border-slate-300 bg-white text-slate-700 shadow-sm hover:bg-slate-50 hover:text-ink
+          {% elif variant == 'quiet' %}text-muted hover:bg-slate-100 hover:text-ink
+          {% else %}bg-primary text-white shadow-sm hover:bg-primary-dark{% endif %}">
   {% if icon %}{% include "components/icon.html" with name=icon size="h-4 w-4" %}{% endif %}
   {{ label }}
 {% if url %}</a>{% else %}</button>{% endif %}

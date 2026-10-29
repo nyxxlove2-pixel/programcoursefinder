@@ -1,0 +1,12 @@
+{# Shown while the AI works on an answer: three pulsing dots. assistant.js swaps the text in [data-thinking-text] every few seconds. #}
+<li class="animate-rise-in" role="status" aria-live="polite">
+  {% include "ai_assistant/chat_avatar.html" %}
+  <div class="mt-2 flex items-center gap-3 sm:pl-[2.375rem]">
+    <span class="flex gap-1" aria-hidden="true">
+      <span class="h-1.5 w-1.5 animate-typing rounded-full bg-primary"></span>
+      <span class="h-1.5 w-1.5 animate-typing rounded-full bg-primary [animation-delay:150ms]"></span>
+      <span class="h-1.5 w-1.5 animate-typing rounded-full bg-primary [animation-delay:300ms]"></span>
+    </span>
+    <p data-thinking-text class="text-sm text-muted">Searching verified courses…</p>
+  </div>
+</li>

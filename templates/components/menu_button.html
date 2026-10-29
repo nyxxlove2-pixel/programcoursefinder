@@ -3,7 +3,7 @@
   Usage: include "components/menu_button.html" with target="nav-menu" hide_from="lg" icon="close" label="Close menu"
 {% endcomment %}
 <button type="button" aria-label="{{ label|default:'Open menu' }}" aria-controls="{{ target }}"
-        class="grid h-11 w-11 shrink-0 place-items-center rounded-full border border-line bg-white text-ink hover:border-primary/40 hover:text-primary {{ hide_from|default:'md' }}:hidden"
+        class="grid h-11 w-11 shrink-0 place-items-center rounded-lg border border-line bg-white text-ink shadow-sm hover:bg-slate-50 {{ hide_from|default:'md' }}:hidden"
         onclick="document.getElementById('{{ target }}').classList.toggle('hidden')">
   {% include "components/icon.html" with name=icon|default:"menu" %}
 </button>

@@ -4,6 +4,8 @@ from django.shortcuts import get_object_or_404, redirect, render
 
 from accounts.models import User
 from accounts.utils import get_current_user, role_required
+from core.forms import ImagesForm
+from core.uploads import UPLOAD_FAILED_MESSAGE, UploadFailed, delete_if_replaced, new_image_url
 from courses.utils import add_distances, get_compare_ids, public_courses, user_location, with_ratings
 from reviews.models import Review
 from reviews.utils import (
@@ -62,13 +64,32 @@ def analytics(request):
 def edit(request):
     organization = get_own_organization(request.app_user)
     form = OrganizationForm(request.POST or None, instance=organization)
-    if request.method == 'POST' and form.is_valid():
-        organization = form.save(commit=False)
-        organization.owner = request.app_user
-        organization.save()
-        messages.success(request, 'College profile saved.')
-        return redirect('organizations:dashboard')
-    return render(request, 'organizations/edit.html', {'form': form})
+    images = ImagesForm(request.POST or None, request.FILES or None)
+    if request.method == 'POST' and form.is_valid() and images.is_valid():
+        if save_college_profile(request, form, images):
+            messages.success(request, 'College profile saved.')
+            # A brand-new college goes on to the dashboard for its next steps
+            return redirect('organizations:edit' if organization else 'organizations:dashboard')
+    return render(request, 'organizations/edit.html', {'form': form, 'images': images, 'organization': organization})
+
+
+def save_college_profile(request, form, images):
+    """Save the college details, logo, and cover image.
+    Returns False (with an error message) when an image could not be uploaded."""
+    organization = form.save(commit=False)
+    organization.owner = request.app_user
+    old_logo, old_cover = organization.logo_url, organization.cover_url
+    folder = f'organizations/{request.app_user.pk}'
+    try:
+        organization.logo_url = new_image_url(images, 'photo', old_logo, folder)
+        organization.cover_url = new_image_url(images, 'cover', old_cover, folder)
+    except UploadFailed:
+        messages.error(request, UPLOAD_FAILED_MESSAGE)
+        return False
+    organization.save()
+    delete_if_replaced(old_logo, organization.logo_url)
+    delete_if_replaced(old_cover, organization.cover_url)
+    return True
 
 
 @role_required(User.ROLE_ORGANIZATION)

@@ -12,6 +12,7 @@ CREATE TABLE IF NOT EXISTS users (
     password_hash  TEXT NOT NULL,
     full_name      TEXT NOT NULL,
     role           TEXT NOT NULL CHECK (role IN ('user', 'organization')),
+    avatar_url     TEXT,  -- profile photo in Supabase Storage (bucket profile-images)
     created_at     TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 
@@ -24,7 +25,8 @@ CREATE TABLE IF NOT EXISTS user_profiles (
     address         TEXT,
     latitude        NUMERIC(9, 6),
     longitude       NUMERIC(9, 6),
-    share_location  BOOLEAN NOT NULL DEFAULT FALSE  -- location is used only with consent
+    share_location  BOOLEAN NOT NULL DEFAULT FALSE,  -- location is used only with consent
+    cover_url       TEXT                            -- background image on the profile page
 );
 
 -- =====================================================
@@ -46,6 +48,8 @@ CREATE TABLE IF NOT EXISTS organizations (
     instagram_url  TEXT,
     tiktok_url     TEXT,
     youtube_url    TEXT,
+    logo_url       TEXT,  -- logo and cover image in Supabase Storage (bucket profile-images)
+    cover_url      TEXT,
     status         TEXT NOT NULL DEFAULT 'pending'
                    CHECK (status IN ('pending', 'approved', 'needs_changes', 'rejected')),
     status_reason  TEXT,           -- shown when status is needs_changes or rejected
@@ -161,6 +165,25 @@ CREATE TABLE IF NOT EXISTS review_summaries (
     UNIQUE (course_id, period_type, period_start)
 );
 
+-- AI assistant chats: one conversation per topic, one row per question and answer.
+-- sources keeps the cited courses as [{"id", "name", "college"}] so old answers still show them.
+CREATE TABLE IF NOT EXISTS ai_conversations (
+    id          BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    user_id     BIGINT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    title       TEXT NOT NULL,
+    created_at  TIMESTAMPTZ NOT NULL DEFAULT now(),
+    updated_at  TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+
+CREATE TABLE IF NOT EXISTS ai_messages (
+    id               BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    conversation_id  BIGINT NOT NULL REFERENCES ai_conversations(id) ON DELETE CASCADE,
+    question         TEXT NOT NULL,
+    answer           TEXT NOT NULL,
+    sources          JSONB NOT NULL DEFAULT '[]',
+    created_at       TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+
 -- Paid ads: a banner image or a YouTube video. Shown with a "Sponsored" label,
 -- approved by the developer in Django admin, and never used by the AI.
 CREATE TABLE IF NOT EXISTS ads (
@@ -218,6 +241,8 @@ CREATE INDEX IF NOT EXISTS idx_replies_review         ON review_replies(review_i
 CREATE INDEX IF NOT EXISTS idx_notifications_user     ON notifications(user_id, is_read);
 CREATE INDEX IF NOT EXISTS idx_reports_status         ON reports(status);
 CREATE INDEX IF NOT EXISTS idx_ads_status             ON ads(status);
+CREATE INDEX IF NOT EXISTS idx_ai_conversations_user  ON ai_conversations(user_id, updated_at DESC);
+CREATE INDEX IF NOT EXISTS idx_ai_messages_chat       ON ai_messages(conversation_id);
 
 -- =====================================================
 -- 9. SECURITY
@@ -239,6 +264,8 @@ ALTER TABLE reports                ENABLE ROW LEVEL SECURITY;
 ALTER TABLE notifications          ENABLE ROW LEVEL SECURITY;
 ALTER TABLE review_summaries       ENABLE ROW LEVEL SECURITY;
 ALTER TABLE ads                    ENABLE ROW LEVEL SECURITY;
+ALTER TABLE ai_conversations       ENABLE ROW LEVEL SECURITY;
+ALTER TABLE ai_messages            ENABLE ROW LEVEL SECURITY;
 
 -- =====================================================
 -- 10. AFTER "python manage.py migrate"
@@ -257,3 +284,19 @@ BEGIN
         EXECUTE format('ALTER TABLE %I ENABLE ROW LEVEL SECURITY', t);
     END LOOP;
 END $$;
+
+-- =====================================================
+-- 11. PROFILE IMAGES
+-- =====================================================
+-- Photos, logos, and cover images are stored in Supabase Storage (Vercel's disk is
+-- read-only). This makes a public bucket for them: 5 MB max, images only.
+-- The ALTER lines add the image columns to a database made before they existed.
+
+INSERT INTO storage.buckets (id, name, public, file_size_limit, allowed_mime_types)
+VALUES ('profile-images', 'profile-images', TRUE, 5242880, ARRAY['image/jpeg', 'image/png', 'image/webp'])
+ON CONFLICT (id) DO NOTHING;
+
+ALTER TABLE users         ADD COLUMN IF NOT EXISTS avatar_url TEXT;
+ALTER TABLE user_profiles ADD COLUMN IF NOT EXISTS cover_url  TEXT;
+ALTER TABLE organizations ADD COLUMN IF NOT EXISTS logo_url   TEXT;
+ALTER TABLE organizations ADD COLUMN IF NOT EXISTS cover_url  TEXT;

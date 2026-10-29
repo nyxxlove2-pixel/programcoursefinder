@@ -161,6 +161,11 @@ WHITENOISE_USE_FINDERS = True
 MEDIA_URL = 'media/'
 MEDIA_ROOT = BASE_DIR / 'media'
 
+# Profile photos, logos, and cover images go to Supabase Storage (see core/uploads.py).
+# Both values are in Supabase > Project Settings > API. The service key is secret: .env only.
+SUPABASE_URL = os.getenv('SUPABASE_URL', '').rstrip('/')
+SUPABASE_SERVICE_KEY = os.getenv('SUPABASE_SERVICE_KEY', '')
+
 
 # Email
 # https://docs.djangoproject.com/en/6.1/topics/email/#topic-email-configuration

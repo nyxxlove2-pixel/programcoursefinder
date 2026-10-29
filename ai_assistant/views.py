@@ -1,8 +1,10 @@
 from django.contrib import messages
 from django.db.models import Q
-from django.http import Http404
+from django.http import Http404, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
+from django.template.loader import render_to_string
 from django.urls import reverse
+from django.utils import timezone
 from django.views.decorators.http import require_POST
 
 from accounts.models import User
@@ -17,13 +19,11 @@ from reviews.models import Review
 from .assistant import answer_question
 from .forms import QuestionForm
 from .groq import AIUnavailable
-from .models import ReviewSummary
+from .models import ChatMessage, Conversation, ReviewSummary
 from .summaries import summary_status, write_summary
 from .translation import remember_translated, translate
 from .utils import BUSY_MESSAGE, limit_message, take_ai_request
 
-CHAT_SESSION_KEY = 'assistant_chat'
-MAX_CHAT_TURNS = 6  # older questions drop off so the session stays small
 EXAMPLE_QUESTIONS = [
     'Which IT course near me has good reviews?',
     'What can I study for under ₱40,000 a year?',
@@ -34,42 +34,79 @@ EXAMPLE_QUESTIONS = [
 # ---------- Assistant (User accounts) ----------
 
 @role_required(User.ROLE_USER)
-def assistant(request):
+def assistant(request, pk=None):
+    """The chat page. Without a pk it starts a new chat; with one it opens a saved chat."""
+    conversation = None
+    if pk is not None:
+        conversation = get_object_or_404(Conversation, pk=pk, user=request.app_user)
     form = QuestionForm(request.POST or None)
+    if request.method == 'POST' and request.headers.get('X-Requested-With') == 'fetch':
+        return answer_for_chat(request, form, conversation)
     if request.method == 'POST' and form.is_valid():
-        ask_and_save(request, form.cleaned_data['question'])
-        return redirect('ai_assistant:assistant')
+        message, error = ask_and_save(request, form.cleaned_data['question'], conversation)
+        if error:
+            messages.error(request, error)
+            return redirect(request.path)
+        return redirect(message.conversation)
+    full_name = request.app_user.full_name or ''
     return render(request, 'ai_assistant/assistant.html', {
         'form': form,
-        'chat': request.session.get(CHAT_SESSION_KEY, []),
+        'conversation': conversation,
+        'chat': conversation.messages.all() if conversation else [],
+        'conversations': request.app_user.ai_conversations.all(),
+        'first_name': full_name.split()[0] if full_name.strip() else '',
         'has_location': user_location(request) is not None,
         'example_questions': EXAMPLE_QUESTIONS,
     })
 
 
-def ask_and_save(request, question):
-    """Ask the AI and add the question and answer to this visitor's chat."""
+def answer_for_chat(request, form, conversation):
+    """Reply to the chat page's fetch() with the new answer and its sidebar link as HTML,
+    so the page can animate the answer in and keep the history list up to date."""
+    if not form.is_valid():
+        return JsonResponse({'error': 'Please type a question (up to 500 characters).'}, status=400)
+    message, error = ask_and_save(request, form.cleaned_data['question'], conversation)
+    if error:
+        return JsonResponse({'error': error}, status=503)
+    return JsonResponse({
+        'html': render_to_string('ai_assistant/chat_answer.html', {'turn': message}, request=request),
+        'history_html': render_to_string('ai_assistant/chat_history_link.html', {
+            'item': message.conversation, 'conversation': message.conversation,
+        }, request=request),
+        'conversation_id': message.conversation.pk,
+        'conversation_url': message.conversation.get_absolute_url(),
+    })
+
+
+def ask_and_save(request, question, conversation):
+    """Ask the AI and save the question and answer, starting a new conversation if needed.
+    Returns (saved message, None), or (None, error message for the user)."""
     if not take_ai_request(request.app_user):
-        messages.error(request, limit_message())
-        return
+        return None, limit_message()
     try:
         answer, sources = answer_question(question, request.app_user, user_location(request))
     except AIUnavailable:
-        messages.error(request, BUSY_MESSAGE)
-        return
-    turn = {
-        'question': question,
-        'answer': answer,
-        'sources': [{'id': c.pk, 'name': c.name, 'college': c.organization.name} for c in sources],
-    }
-    chat = request.session.get(CHAT_SESSION_KEY, []) + [turn]
-    request.session[CHAT_SESSION_KEY] = chat[-MAX_CHAT_TURNS:]
+        return None, BUSY_MESSAGE
+    if conversation is None:
+        conversation = Conversation.objects.create(user=request.app_user, title=question[:Conversation.TITLE_LENGTH])
+    else:
+        conversation.updated_at = timezone.now()
+        conversation.save(update_fields=['updated_at'])
+    message = ChatMessage.objects.create(
+        conversation=conversation,
+        question=question,
+        answer=answer,
+        sources=[{'id': c.pk, 'name': c.name, 'college': c.organization.name} for c in sources],
+    )
+    return message, None
 
 
 @role_required(User.ROLE_USER)
 @require_POST
-def clear_chat(request):
-    request.session.pop(CHAT_SESSION_KEY, None)
+def delete_conversation(request, pk):
+    conversation = get_object_or_404(Conversation, pk=pk, user=request.app_user)
+    conversation.delete()
+    messages.success(request, 'Chat deleted.')
     return redirect('ai_assistant:assistant')
 
 

@@ -1,2 +1,6 @@
-{# Round avatar with the first letter of a name. Usage: include "components/avatar.html" with name=user.full_name size="h-10 w-10" #}
-<span class="grid {{ size|default:'h-9 w-9' }} shrink-0 place-items-center rounded-full bg-gradient-to-br from-primary to-primary-dark text-sm font-bold text-white ring-2 ring-white" aria-hidden="true">{{ name|first|upper }}</span>
+{# Round avatar: the person's photo, or the first letter of their name. Usage: include "components/avatar.html" with name=user.full_name photo=user.avatar_url size="h-10 w-10" #}
+{% if photo %}
+  <img src="{{ photo }}" alt="" class="{{ size|default:'h-9 w-9' }} shrink-0 rounded-full bg-white object-cover ring-2 ring-white" aria-hidden="true">
+{% else %}
+  <span class="grid {{ size|default:'h-9 w-9' }} shrink-0 place-items-center rounded-full bg-gradient-to-br from-primary to-primary-dark text-sm font-bold text-white ring-2 ring-white" aria-hidden="true">{{ name|first|upper }}</span>
+{% endif %}

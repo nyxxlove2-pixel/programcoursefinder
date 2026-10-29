@@ -4,57 +4,92 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>{% block title %}Program Course Finder{% endblock %}</title>
-  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'><rect width='64' height='64' rx='16' fill='%235B4FE9'/><path d='M23.5 17v31' stroke='%23fff' stroke-width='6.5' stroke-linecap='round'/><circle cx='36.5' cy='27.5' r='11.3' fill='none' stroke='%23fff' stroke-width='6.5'/><circle cx='36.5' cy='27.5' r='3.6' fill='%23F26A1B'/><circle cx='23.5' cy='49' r='4.2' fill='%23F26A1B'/></svg>">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'><rect width='64' height='64' rx='16' fill='%234F46E5'/><path d='M23.5 17v31' stroke='%23fff' stroke-width='6.5' stroke-linecap='round'/><circle cx='36.5' cy='27.5' r='11.3' fill='none' stroke='%23fff' stroke-width='6.5'/><circle cx='36.5' cy='27.5' r='3.6' fill='%23F26A1B'/><circle cx='23.5' cy='49' r='4.2' fill='%23F26A1B'/></svg>">
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+  {# AOS (Animate On Scroll): add data-aos="fade-up" to any element and it slides in when scrolled into view. Started at the end of <body>. #}
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/aos/2.3.4/aos.css">
 
   {# Tailwind CSS (Play CDN: no build step). The forms plugin gives every input, select, and checkbox a clean base style. #}
   <script src="https://cdn.tailwindcss.com/3.4.17?plugins=forms"></script>
   <script>
-    // Design tokens from Program_Course_Finder_Design.md, defined once
+    // Design tokens, defined once: indigo for actions, slate for text, lines, and the page canvas
     tailwind.config = {
       theme: {
         extend: {
           colors: {
-            primary: { DEFAULT: '#5B4FE9', dark: '#4A3FD0' },
+            primary: { DEFAULT: '#4F46E5', dark: '#4338CA' }, // indigo-600 / indigo-700
             accent: '#F26A1B',
-            ink: '#1B1B1F',
-            muted: '#5F5F6B',
-            lavender: '#F4F1FD',
-            line: '#E4E0F5',
+            ink: '#0F172A',      // slate-900
+            muted: '#475569',    // slate-600
+            lavender: '#EEF2FF', // indigo-50: soft tint behind active items and icon chips
+            line: '#E2E8F0',     // slate-200
             star: '#F5B301',
           },
           fontFamily: {
-            sans: ['"Plus Jakarta Sans"', 'Poppins', 'ui-sans-serif', 'system-ui', 'sans-serif'],
+            sans: ['Inter', 'ui-sans-serif', 'system-ui', 'sans-serif'],
           },
           boxShadow: {
-            soft: '0 8px 24px rgba(91, 79, 233, 0.12)',
+            soft: '0 12px 32px -12px rgba(15, 23, 42, 0.18)',
             // Quiet edge for panels that sit on the page instead of floating above it
-            panel: '0 1px 2px rgba(27, 27, 31, 0.04), 0 1px 3px rgba(91, 79, 233, 0.06)',
+            panel: '0 1px 2px rgba(15, 23, 42, 0.05)',
+          },
+          // Motion for the AI chat: messages rise in, and three dots pulse while an answer loads
+          keyframes: {
+            'rise-in': { from: { opacity: '0', transform: 'translateY(8px)' }, to: { opacity: '1', transform: 'none' } },
+            typing: { '0%, 80%, 100%': { opacity: '0.3', transform: 'translateY(0)' }, '40%': { opacity: '1', transform: 'translateY(-3px)' } },
+            // Landing pages: floating cards and shapes gently bob up and down
+            float: { '0%, 100%': { transform: 'translateY(0)' }, '50%': { transform: 'translateY(-10px)' } },
+          },
+          animation: {
+            'rise-in': 'rise-in 0.3s ease-out both',
+            typing: 'typing 1.2s ease-in-out infinite',
+            float: 'float 6s ease-in-out infinite',
+            'float-slow': 'float 9s ease-in-out infinite',
           },
         },
       },
     };
   </script>
 </head>
-<body class="min-h-screen overflow-x-hidden font-sans text-ink antialiased {% block body_class %}bg-gradient-to-b from-lavender via-white to-white bg-no-repeat{% endblock %}">
+<body class="min-h-screen overflow-x-hidden font-sans text-ink antialiased {% block body_class %}bg-slate-50{% endblock %}">
   {# Public and User pages use this navbar layout. layouts/organization.html and layouts/auth_page.html replace it. #}
   {% block body %}
     {% include "components/navbar.html" %}
 
-    <main class="mx-auto w-full max-w-6xl px-4 pb-24 sm:px-6">
+    <main class="mx-auto w-full max-w-7xl px-4 pb-24 sm:px-6">
       {% include "components/messages.html" %}
       {% block content %}{% endblock %}
     </main>
 
-    <footer class="border-t border-line">
-      <div class="mx-auto flex max-w-6xl flex-col gap-4 px-4 py-8 text-sm text-muted sm:flex-row sm:items-center sm:justify-between sm:px-6">
+    <footer class="border-t border-line bg-white">
+      <div class="mx-auto flex max-w-7xl flex-col gap-4 px-4 py-8 text-sm text-muted sm:flex-row sm:items-center sm:justify-between sm:px-6">
         {% include "components/logo.html" %}
+        <nav class="flex gap-5 font-medium">
+          <a href="{% url 'core:about' %}" class="hover:text-primary">About</a>
+          <a href="{% url 'courses:search' %}" class="hover:text-primary">Courses</a>
+          <a href="{% url 'courses:compare' %}" class="hover:text-primary">Compare</a>
+        </nav>
         <p>Only verified colleges are listed. The final choice is always yours.</p>
       </div>
     </footer>
+
+    {% include "components/ai_button.html" %}
   {% endblock %}
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/aos/2.3.4/aos.js"></script>
+  <script>
+    // Play each scroll animation once. People who turn off motion in their system settings see no animation.
+    AOS.init({
+      once: true,
+      duration: 700,
+      easing: 'ease-out-cubic',
+      offset: 60,
+      disable: window.matchMedia('(prefers-reduced-motion: reduce)').matches,
+    });
+  </script>
 </body>
 </html>

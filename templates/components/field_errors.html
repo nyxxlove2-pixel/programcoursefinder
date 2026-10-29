@@ -1,0 +1,6 @@
+{# A form field's errors, in red with an icon. Usage: include "components/field_errors.html" with field=form.email #}
+{% for error in field.errors %}
+  <p class="flex items-center gap-1.5 text-sm font-medium text-red-600">
+    {% include "components/icon.html" with name="alert" size="h-4 w-4" %}{{ error }}
+  </p>
+{% endfor %}

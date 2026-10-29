@@ -9,7 +9,8 @@ class AdForm(StyledFormMixin, forms.ModelForm):
     class Meta:
         model = Ad
         fields = ['title', 'ad_type', 'media_url', 'course']
-        widgets = {'ad_type': forms.RadioSelect}
+        # title is a TextField (big box by default); a title only needs one line
+        widgets = {'title': forms.TextInput, 'ad_type': forms.RadioSelect}
         labels = {
             'title': 'Ad headline',
             'ad_type': 'Ad type',

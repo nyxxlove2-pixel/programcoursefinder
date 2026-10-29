@@ -1,3 +1,5 @@
+from urllib.parse import quote_plus
+
 from django.db import models
 from django.urls import reverse
 
@@ -29,6 +31,9 @@ class Organization(models.Model):
     instagram_url = models.URLField(blank=True, null=True)
     tiktok_url = models.URLField(blank=True, null=True)
     youtube_url = models.URLField(blank=True, null=True)
+    # Logo and cover image, stored in Supabase Storage (see core/uploads.py)
+    logo_url = models.URLField(blank=True, null=True)
+    cover_url = models.URLField(blank=True, null=True)
     status = models.TextField(choices=STATUS_CHOICES, default=STATUS_PENDING)
     status_reason = models.TextField(blank=True, null=True)
     verified_at = models.DateTimeField(blank=True, null=True)
@@ -45,10 +50,12 @@ class Organization(models.Model):
         return reverse('organizations:detail', args=[self.pk])
 
     def map_url(self):
-        """Google Maps link to the campus pin, or '' if there is no pin."""
-        if self.latitude is None or self.longitude is None:
-            return ''
-        return f'https://www.google.com/maps?q={self.latitude},{self.longitude}'
+        """Google Maps link to the campus pin. Without a pin it searches the address; '' if there is neither."""
+        if self.latitude is not None and self.longitude is not None:
+            return f'https://www.google.com/maps?q={self.latitude},{self.longitude}'
+        if self.address:
+            return f'https://www.google.com/maps/search/?api=1&query={quote_plus(self.address)}'
+        return ''
 
     @property
     def is_verified(self):

@@ -14,6 +14,8 @@ class ReviewForm(StyledFormMixin, forms.ModelForm):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+        # Django adds an empty "---------" choice for drop-downs; as radio buttons only the 5 ratings make sense
+        self.fields['rating'].choices = Review.RATING_CHOICES
         self.fields['comment'].widget.attrs['placeholder'] = 'What was good? What could be better?'
 
 

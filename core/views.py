@@ -17,3 +17,8 @@ def home(request):
         'featured_courses': featured_courses,
         'compare_ids': get_compare_ids(request),
     })
+
+
+def about(request):
+    # Public page that explains what the site is for; anyone can open it
+    return render(request, 'core/about.html')

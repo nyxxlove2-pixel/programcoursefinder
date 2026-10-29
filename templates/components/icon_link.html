@@ -1,0 +1,9 @@
+{% comment %}
+  Square link with only an icon, styled like components/menu_button.html. The label is read by screen readers and shown on hover.
+  Usage: include "components/icon_link.html" with url=... icon="plus" label="New chat" hide_from="lg"
+  hide_from (optional) hides it from that screen size up.
+{% endcomment %}
+<a href="{{ url }}" aria-label="{{ label }}" title="{{ label }}"
+   class="grid h-11 w-11 shrink-0 place-items-center rounded-lg border border-line bg-white text-ink shadow-sm hover:bg-slate-50 hover:text-primary {% if hide_from %}{{ hide_from }}:hidden{% endif %}">
+  {% include "components/icon.html" with name=icon size="h-5 w-5" %}
+</a>

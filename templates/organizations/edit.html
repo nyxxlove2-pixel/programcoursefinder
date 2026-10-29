@@ -1,5 +1,7 @@
-{% extends "layouts/form_page.html" %}
+{% extends "layouts/settings_page.html" %}
 {% block title %}College profile · Program Course Finder{% endblock %}
-{% block heading %}College <span class="text-primary">profile</span>{% endblock %}
-{% block subheading %}Official contact details and links. Shown to users once your college is verified.{% endblock %}
-{% block actions %}{% include "components/button.html" with label="Save profile" %}{% endblock %}
+{% block section_title %}College profile{% endblock %}
+{% block section_description %}Your logo, cover image, contact details, and links. Shown to users once your college is verified.{% endblock %}
+{% block image_rows %}
+  {% include "components/profile_images.html" with images=images photo_url=organization.logo_url cover_url=organization.cover_url name=organization.name|default:current_user.full_name photo_label="Logo" cover_help="Shown at the top of your college page. A wide campus photo works best." square=True %}
+{% endblock %}

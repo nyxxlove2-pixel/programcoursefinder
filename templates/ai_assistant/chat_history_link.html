@@ -1,0 +1,20 @@
+{% comment %}
+  One saved chat in the chat sidebar, with a delete button. Needs `item`; it is highlighted when it is the open `conversation`.
+  The assistant view also sends it to assistant.js, which puts it at the top of the list after each answer.
+  The delete button is always visible on phones (no hover there) and shows on hover on desktop.
+{% endcomment %}
+<li data-conversation="{{ item.pk }}" class="group relative">
+  <a href="{{ item.get_absolute_url }}" title="{{ item.title }}"
+     class="flex min-h-[44px] items-center rounded-lg py-2 pl-3 pr-11 text-sm transition lg:min-h-[38px]
+            {% if item.pk == conversation.pk %}bg-white font-semibold text-ink shadow-sm ring-1 ring-line{% else %}text-muted hover:bg-slate-100 hover:text-ink{% endif %}">
+    <span class="truncate">{{ item.title }}</span>
+  </a>
+  <form method="post" action="{% url 'ai_assistant:delete_conversation' item.pk %}" onsubmit="return confirm('Delete this chat?')"
+        class="absolute right-1 top-1/2 -translate-y-1/2">
+    {% csrf_token %}
+    <button aria-label="Delete chat: {{ item.title }}" title="Delete chat"
+            class="grid h-9 w-9 place-items-center rounded-md text-slate-400 transition hover:bg-red-50 hover:text-red-600 focus:opacity-100 lg:h-8 lg:w-8 lg:opacity-0 lg:group-hover:opacity-100">
+      {% include "components/icon.html" with name="trash" size="h-4 w-4" %}
+    </button>
+  </form>
+</li>
